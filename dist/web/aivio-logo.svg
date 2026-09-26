@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1a4e"/>
+      <stop offset="100%" style="stop-color:#0d3080"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90d9"/>
+      <stop offset="100%" style="stop-color:#1a5fc8"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#c8860a"/>
+      <stop offset="100%" style="stop-color:#f5c842"/>
+    </linearGradient>
+    <linearGradient id="flame" x1="0%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" style="stop-color:#e8650a"/>
+      <stop offset="60%" style="stop-color:#f5a623"/>
+      <stop offset="100%" style="stop-color:#fff176"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#4a90d9;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#4a90d9;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="120" height="120" rx="24" fill="url(#bg)"/>
+
+  <!-- Glow -->
+  <ellipse cx="60" cy="75" rx="38" ry="10" fill="url(#glow)" opacity="0.6"/>
+
+  <!-- Letter A body (left leg) -->
+  <polygon points="20,95 42,30 52,30 30,95" fill="url(#blue)"/>
+  <!-- Letter A body (right leg) -->
+  <polygon points="100,95 78,30 68,30 90,95" fill="url(#blue)"/>
+  <!-- Letter A crossbar -->
+  <rect x="35" y="64" width="50" height="10" rx="2" fill="url(#blue)"/>
+
+  <!-- Gold orbital ring -->
+  <ellipse cx="60" cy="80" rx="42" ry="9" fill="none" stroke="url(#gold)" stroke-width="3.5" stroke-linecap="round"
+    transform="rotate(-10,60,80)"/>
+
+  <!-- Torch pillar (at top of A) -->
+  <rect x="56.5" y="18" width="7" height="16" rx="2" fill="#c8a96e"/>
+  <!-- Torch cup -->
+  <polygon points="50,18 70,18 67,14 53,14" fill="url(#gold)"/>
+
+  <!-- Flame -->
+  <path d="M60,6 C57,10 54,13 56,16 C58,13 60,12 62,14 C64,11 66,8 60,6Z" fill="url(#flame)"/>
+  <path d="M60,9 C58.5,12 57,14 58.5,16.5 C59.5,14 61,13 62,15 C63,12 62,10 60,9Z" fill="#fff9c4" opacity="0.8"/>
+</svg>

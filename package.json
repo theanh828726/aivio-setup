@@ -1,0 +1,38 @@
+{
+  "name": "create-aivio-bot",
+  "version": "1.0.0",
+  "description": "Aivio Bot Setup — Tạo chatbot AI miễn phí cho Telegram, Zalo, Facebook",
+  "main": "dist/cli.js",
+  "bin": {
+    "create-aivio-bot": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "aivio",
+    "chatbot",
+    "cli",
+    "bot",
+    "zalo",
+    "telegram",
+    "ai",
+    "vietnam"
+  ],
+  "author": "aivio",
+  "license": "MIT",
+  "dependencies": {
+    "@inquirer/prompts": "^4.3.1",
+    "chalk": "^5.3.0",
+    "fs-extra": "^11.2.0"
+  },
+  "bundleDependencies": [
+    "@inquirer/prompts",
+    "chalk",
+    "fs-extra"
+  ],
+  "type": "module"
+}
