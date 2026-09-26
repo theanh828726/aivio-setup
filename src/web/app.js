@@ -133,16 +133,16 @@ function socialIcon(name) {
 }
 function sidebarExtras() {
   const socials = [
-    ['facebook','https://www.facebook.com/holeminhtuan.it/'],
-    ['telegram','https://t.me/holeminhtuan_it'],
-    ['zalo','https://zalo.me/0962794917'],
-    ['github','https://github.com/tuanminhhole/']
+    ['facebook','https://www.facebook.com/hocvienai'],
+    ['telegram','https://t.me/hocvienai'],
+    ['zalo','https://zalo.me/hocvienai'],
+    ['github','https://github.com/theanh828726/']
   ];
   return `<div style="margin-top: auto; width: 100%;">
     <hr style="border: 0; border-top: 1px solid var(--hair); margin: 16px 0 20px 0; opacity: 0.6;" />
     <div class="sidebar-extra" style="margin-top: 0;">
       <div class="side-info side-author" style="text-align: center; background: transparent; border: none; box-shadow: none; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
-        <p style="margin: 0 0 10px 0; font-weight: 600; color: var(--muted); font-size: 12.5px; display: inline-flex; align-items: center; gap: 4px;">Được làm ❤️ bởi <a href="https://zalo.me/0962794917" target="_blank" rel="noopener" style="color: var(--muted); text-decoration: none; font-weight: 700;">tuanminhole</a></p>
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: var(--muted); font-size: 12.5px; display: inline-flex; align-items: center; gap: 4px;">Phát triển bởi <a href="https://hocvienai.com" target="_blank" rel="noopener" style="color: var(--muted); text-decoration: none; font-weight: 700;">Học Viện Đào Tạo AI</a></p>
         <div class="socials" style="justify-content: center; margin-top: 0; display: flex; gap: 8px; width: 100%;">
           ${socials.map(([n,u])=>`<a href="${u}" target="_blank" rel="noopener" aria-label="${n}">${socialIcon(n)}</a>`).join('')}
         </div>
@@ -161,10 +161,10 @@ function donateModal() {
 function fbPluginModal() {
   if (!state.fbPluginModalOpen) return '';
   const socials = [
-    ['facebook','https://www.facebook.com/holeminhtuan.it/'],
-    ['telegram','https://t.me/holeminhtuan_it'],
-    ['zalo','https://zalo.me/0962794917'],
-    ['github','https://github.com/tuanminhhole/']
+    ['facebook','https://www.facebook.com/hocvienai'],
+    ['telegram','https://t.me/hocvienai'],
+    ['zalo','https://zalo.me/hocvienai'],
+    ['github','https://github.com/theanh828726/']
   ];
   return `<div class="modal-backdrop confirm-backdrop" data-fbplugin="close">
     <section class="donate-modal confirm-modal" role="dialog" aria-modal="true" aria-label="fb-messenger plugin" onclick="event.stopPropagation()">
@@ -261,7 +261,7 @@ function ui(key) {
     light:['S\u00e1ng','Light'], dark:['T\u1ed1i','Dark'], donate:['\u1ee6ng h\u1ed9','Donate'], installer:['TR\u00ccNH C\u00c0I \u0110\u1eb6T WEB C\u1ee4C B\u1ed8','LOCAL WEB INSTALLER'],
     osTitle:['Ch\u1ecdn h\u1ec7 \u0111i\u1ec1u h\u00e0nh','Choose operating system'], osDesc:['M\u1eb7c \u0111\u1ecbnh theo m\u00e1y \u0111\u00e3 nh\u1eadn di\u1ec7n','Default follows detected machine'],
     modeTitle:['Ch\u1ecdn ch\u1ebf \u0111\u1ed9 ch\u1ea1y','Choose runtime mode'], modeDesc:['Ch\u1ea1y th\u1eb3ng tr\u00ean m\u00e1y (native). Docker \u0111\u00e3 ng\u1eebng cho project m\u1edbi.','Runs directly on this machine (native). Docker is retired for new projects.'],
-    install:['C\u00e0i OpenClaw','Install OpenClaw'], installSub:['T\u1ea1o project \u2192 c\u00e0i runtime m\u1edbi nh\u1ea5t \u2192 kh\u1edfi \u0111\u1ed9ng bot','Generate project \u2192 install latest runtime \u2192 start bot'],
+    install:['T\u1ea1o Bot','Create Bot'], installSub:['T\u1ea1o project \u2192 c\u00e0i runtime m\u1edbi nh\u1ea5t \u2192 kh\u1edfi \u0111\u1ed9ng bot','Generate project \u2192 install latest runtime \u2192 start bot'],
     system:['H\u1ec7 th\u1ed1ng','System'], notReady:['Ch\u01b0a s\u1eb5n s\u00e0ng','Not ready'], missing:['Thi\u1ebfu','Missing'],
     liveLogs:['Nh\u1eadt k\u00fd tr\u1ef1c ti\u1ebfp','Live Logs'], status:['Tr\u1ea1ng th\u00e1i','Status'], yes:['C\u00f3','Yes'], no:['Kh\u00f4ng','No'], mode:['Ch\u1ebf \u0111\u1ed9','Mode'], project:['Project','Project'], gateway:['Gateway','Gateway'],
     next:['Ti\u1ebfp theo','Next'], nextDesc:['S\u1eeda file nh\u1eadn di\u1ec7n, sau \u0111\u00f3 c\u00e0i k\u1ef9 n\u0103ng/plugin.','Edit identity files, then install skills/plugins.'], openFiles:['M\u1edf t\u1ec7p','Open files'],
@@ -611,7 +611,7 @@ function render() {
         <header class="top"><div><p class="eyebrow">${ui('installer')}</p><h1 id="app-page-title">${title()}</h1></div></header>
         <section class="panel">${content()}</section>
         <footer class="app-footer" style="margin-top: 40px; padding: 24px 0 10px 0; border-top: 1px solid var(--hair); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
-          <p style="margin: 0; font-size: 13px; color: var(--muted);">Copyright © 2026 Được làm ❤️ bởi <a href="https://zalo.me/0962794917" target="_blank" rel="noopener" style="color: var(--muted); text-decoration: none; font-weight: 600;">tuanminhole</a>. Phát hành theo MIT.</p>
+          <p style="margin: 0; font-size: 13px; color: var(--muted);">Copyright © 2026 <a href="https://hocvienai.com" target="_blank" rel="noopener" style="color: var(--muted); text-decoration: none; font-weight: 600;">Học Viện Đào Tạo AI</a>. Phát hành theo MIT.</p>
           <p style="margin: 0; font-size: 13px; color: var(--body); display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;">
             <span>Nếu công cụ này giúp ích cho bạn, hãy mời mình một ly cà phê nhé! ❤️</span>
             <button class="top-donate" data-donate="open" style="padding: 6px 12px; font-size: 11.5px; border-radius: 999px; display: inline-flex; align-items: center; border-color: var(--ok); background: rgba(46, 230, 166, 0.08); color: var(--ok);">
@@ -777,7 +777,7 @@ function wireSkillsHandlers(scope = document) {
 }
 
 function title() {
-  return { dashboard: t('Dashboard vận hành','Operations dashboard'), setup: t('C\u00e0i OpenClaw trong v\u00e0i ph\u00fat', 'Install OpenClaw in minutes'), bot: t('B\u1ea3ng \u0111i\u1ec1u khi\u1ec3n bot','Bot dashboard'), skills: t('K\u1ef9 n\u0103ng & plugins','Skills & plugins'), logs: t('Nh\u1eadt k\u00fd c\u00e0i \u0111\u1eb7t','Install logs'), settings: ui('settings') }[state.tab] || '';
+  return { dashboard: t('Dashboard vận hành','Operations dashboard'), setup: t('T\u1ea1o chatbot trong v\u00e0i ph\u00fat', 'Create chatbot in minutes'), bot: t('B\u1ea3ng \u0111i\u1ec1u khi\u1ec3n bot','Bot dashboard'), skills: t('K\u1ef9 n\u0103ng & plugins','Skills & plugins'), logs: t('Nh\u1eadt k\u00fd c\u00e0i \u0111\u1eb7t','Install logs'), settings: ui('settings') }[state.tab] || '';
 }
 
 function content() {
