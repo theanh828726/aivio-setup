@@ -88,8 +88,8 @@ function hasBundledServer() {
 
 const LOGO = `
 ╭────────────────────────────────────────╮
-│          🦞 OpenClaw Setup 🦞          │
-│             by tuanminhhole            │
+│     🎓 Học Viện Đào Tạo AI Setup      │
+│        Humanized AI for Business       │
 ╰────────────────────────────────────────╯
 `;
 console.log(LOGO);
@@ -101,9 +101,9 @@ const hostArg = args.find((arg) => arg.startsWith('--host='));
 const portArg = args.find((arg) => arg.startsWith('--port='));
 const projectDirArg = args.find((arg) => arg.startsWith('--project-dir='));
 
-const fallbackDir = path.join(os.homedir(), 'openclaw-setup');
+const fallbackDir = path.join(os.homedir(), 'aivio-setup');
 const defaultProjectDir = process.platform === 'win32'
-  ? ((!fs.existsSync('C:\\openclaw-setup') && fs.existsSync(fallbackDir)) ? fallbackDir : 'C:\\openclaw-setup')
+  ? ((!fs.existsSync('C:\\aivio-setup') && fs.existsSync(fallbackDir)) ? fallbackDir : 'C:\\aivio-setup')
   : fallbackDir;
 
 let projectDir = projectDirArg ? projectDirArg.slice('--project-dir='.length) : defaultProjectDir;
@@ -139,7 +139,7 @@ if (process.env.OPENCLAW_SETUP_WIZARD === 'true' || isLocalRepo() || hasBundledS
     projectDir: projectDir,
   });
 } else {
-  const targetDirName = '.openclaw-setup';
+  const targetDirName = '.aivio-setup';
   const targetPath = path.join(os.homedir(), targetDirName);
   const cliPath = path.join(targetPath, 'node_modules', 'create-aivio-bot', 'dist', 'cli.js');
   const shouldUpdate = args.includes('--update');
@@ -150,7 +150,7 @@ if (process.env.OPENCLAW_SETUP_WIZARD === 'true' || isLocalRepo() || hasBundledS
     }
     const pkgPath = path.join(targetPath, 'package.json');
     if (!fs.existsSync(pkgPath)) {
-      fs.writeFileSync(pkgPath, JSON.stringify({ name: 'openclaw-setup-container', version: '1.0.0', private: true, dependencies: {} }, null, 2), 'utf8');
+      fs.writeFileSync(pkgPath, JSON.stringify({ name: 'aivio-setup-container', version: '1.0.0', private: true, dependencies: {} }, null, 2), 'utf8');
     }
 
     let needsInstall = !fs.existsSync(cliPath) || shouldUpdate;

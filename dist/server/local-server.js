@@ -7789,7 +7789,7 @@ export async function startLocalInstaller({ host = '127.0.0.1', preferredPort = 
     activeUiHost = host;
     activeUiPort = preferredPort;
     activeUiProjectDir = projectDir;
-    console.log(`OpenClaw Setup UI is already running: ${url}`);
+    console.log(`Aivio Setup UI is already running: ${url}`);
     console.log('Reusing the running instance - nothing new was started. Keep this window open if it holds your SSH tunnel.');
     ensureReopenShortcut();
     if (openBrowser) openUrl(url);
@@ -7817,7 +7817,7 @@ export async function startLocalInstaller({ host = '127.0.0.1', preferredPort = 
   activeServerInstance = server;
   await new Promise((resolve) => server.listen(port, host, resolve));
   const url = `http://${host}:${port}`;
-  console.log(`OpenClaw Setup UI: ${url}`);
+  console.log(`Aivio Setup UI: ${url}`);
   ensureReopenShortcut();
   if (openBrowser) openUrl(url);
   printRemoteAccessHint(port).catch(() => {});
