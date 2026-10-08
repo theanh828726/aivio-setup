@@ -5,7 +5,7 @@
 ### Build AI chatbots for Telegram, Zalo and Facebook Messenger on OpenClaw, powered by the HVDTAI Router
 
 <p align="center">
-  <img src="https://img.shields.io/badge/RELEASE-v1.1.0-0EA5E9?style=for-the-badge" alt="Version 1.1.0" />
+  <img src="https://img.shields.io/badge/RELEASE-v1.2.0-0EA5E9?style=for-the-badge" alt="Version 1.2.0" />
   <a href="https://router.aivio.vn"><img src="https://img.shields.io/badge/HVDTAI_ROUTER-router.aivio.vn-22C55E?style=for-the-badge" alt="HVDTAI Router" /></a>
   <img src="https://img.shields.io/badge/license-MIT-8B5CF6?style=for-the-badge" alt="MIT" />
 </p>
@@ -41,9 +41,13 @@ npm start
 The UI opens at `http://127.0.0.1:51789`.
 
 1. On router.aivio.vn: connect providers, create a combo named exactly `smart-route`, create an API key under **Endpoints**.
-2. In the Setup UI: **Setup** → pick your OS → **Native** → create the project.
-3. **Dashboard** → **HVDTAI Router** card → **Set key** → paste the key.
-4. **Bot** → **Create bot** → pick a channel (Telegram, Zalo Bot API, personal Zalo, Facebook Messenger).
+2. In the console: **Settings** → **Create project** → pick your OS → **Native**.
+3. **Overview** → **HVDTAI Router** → **Set key** → paste the key.
+4. **Agents** → **Create bot** → pick a channel (Telegram, Zalo Bot API, personal Zalo, Facebook Messenger).
+
+## Running on a VPS
+
+`deploy/install-vps.sh` installs Node.js 24, runs the console as an unprivileged user's systemd service, and puts Nginx + Let's Encrypt in front of it. With an admin password set, every request needs a signed session cookie; proxied requests are refused until a password exists. See [deploy/README.vi.md](deploy/README.vi.md).
 
 ## Environment variables
 
@@ -51,6 +55,8 @@ The UI opens at `http://127.0.0.1:51789`.
 |---|---|---|
 | `AIVIO_ROUTER_MODE` | `remote` | Set to `local` to point new bots at the bundled 9Router (`127.0.0.1:20128`) instead of router.aivio.vn |
 | `AIVIO_SETUP_SPEC` | `github:theanh828726/aivio-setup` | Source used by the in-app **Update** button, e.g. `create-aivio-bot@latest` once published to npm |
+| `AIVIO_ADMIN_PASSWORD` | (empty) | Sets the admin password at startup (hashed, then removed from the environment) |
+| `AIVIO_SETUP_HOME` | `~/.aivio-setup` | Where `auth.json` (the admin password hash) lives |
 
 ## Development
 

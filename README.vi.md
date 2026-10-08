@@ -7,7 +7,7 @@
 *Chạy một lệnh → mở giao diện web → tạo bot. Windows, macOS, Linux, VPS.*
 
 <p align="center">
-  <img src="https://img.shields.io/badge/RELEASE-v1.1.0-0EA5E9?style=for-the-badge" alt="Version 1.1.0" />
+  <img src="https://img.shields.io/badge/RELEASE-v1.2.0-0EA5E9?style=for-the-badge" alt="Version 1.2.0" />
   <a href="https://router.aivio.vn"><img src="https://img.shields.io/badge/HVDTAI_ROUTER-router.aivio.vn-22C55E?style=for-the-badge" alt="HVDTAI Router" /></a>
   <img src="https://img.shields.io/badge/license-MIT-8B5CF6?style=for-the-badge" alt="MIT" />
 </p>
@@ -36,7 +36,7 @@ Messenger     ─┘   (127.0.0.1:18789)           (combo smart-route)
 
 | Thành phần | Phiên bản / vị trí |
 |---|---|
-| Aivio Bot Setup | v1.1.0 |
+| Aivio Bot Setup | v1.2.0 |
 | OpenClaw | `openclaw@2026.9.2` (cài global qua npm) |
 | Router AI | `https://router.aivio.vn/v1`, model `9router/smart-route` |
 | Cấu hình bot | `<project>/.openclaw/openclaw.json` và `<project>/.env` |
@@ -127,9 +127,9 @@ Kết quả đúng là JSON có `choices[0].message.content`. Lỗi 401 nghĩa l
 
 ## 4. Cài OpenClaw và gắn API key
 
-1. Tab **Cài đặt** → chọn hệ điều hành → chế độ **Native** (Docker đã ngừng cho project mới).
-2. **Tạo Bot** → nhập đường dẫn project, ví dụ `D:\aivio-bot`, `/Users/<tên>/aivio-bot`, `/home/<tên>/aivio-bot` → theo dõi Nhật ký đến khi xong.
-3. Tab **Dashboard** → thẻ **HVDTAI Router** → bấm **Nhập key** → dán API key ở bước 3 → **Xác nhận**.
+1. **Cấu hình** → **Tạo project** → chọn hệ điều hành, chế độ **Native** (Docker đã ngừng cho project mới).
+2. Nhập đường dẫn project (mặc định `<thư mục home>/aivio-bot`) → **Cài đặt** → theo dõi **Nhật ký** đến khi xong.
+3. **Tổng quan** → ô **HVDTAI Router** → **Nhập key** → dán API key ở bước 3 → **Xác nhận**.
 
 <img src="docs/router-key.png" alt="Nhập API key cho HVDTAI Router" width="70%" />
 
@@ -139,7 +139,7 @@ Lưu key ở đây sẽ ghi vào `openclaw.json` và `.env` (`NINE_ROUTER_API_KE
 
 ## 5. Tạo bot và kết nối kênh
 
-Tab **Bot** → **Tạo bot** → chọn kênh → điền tên, mô tả, thông tin chủ nhân (Owner) → **Tạo bot**. Tính cách bot sửa trong `SOUL.md`, `AGENTS.md` ở mục file của bot.
+**Agent** → **Tạo bot** → chọn kênh → điền tên, vai trò, thông tin chủ sở hữu → **Tạo bot**. Chọn một bot trong danh sách để sửa tính cách (`SOUL.md`) và quy tắc (`AGENTS.md`) ngay bên phải. Kỹ năng và plugin của từng bot bật ở **Công cụ**.
 
 | Kênh | Cần chuẩn bị | Cách nhận tin |
 |---|---|---|
@@ -150,9 +150,9 @@ Tab **Bot** → **Tạo bot** → chọn kênh → điền tên, mô tả, thôn
 
 **Zalo Bot API:** kiểm tra token bằng `curl https://bot-api.zaloplatforms.com/bot<token>/getMe`. Muốn đưa bot vào nhóm, mở mini app **Zalo Bot Creator** → **Mời Bot vào nhóm** → trưởng nhóm bấm link xác nhận. Trong nhóm, bot chỉ phản hồi khi được @mention hoặc khi có người reply tin của bot.
 
-**Zalo cá nhân:** tạo bot xong bấm **Đăng nhập Zalo** và quét QR. Tự động hoá tài khoản cá nhân có thể vi phạm điều khoản Zalo, nên chỉ dùng tài khoản phụ.
+**Zalo cá nhân:** tạo bot xong vào **Tài khoản Zalo** → **Đăng nhập bằng QR** và quét mã. Tự động hoá tài khoản cá nhân có thể vi phạm điều khoản Zalo, nên chỉ dùng tài khoản phụ.
 
-**Facebook Messenger:** sau khi tạo bot, mở **Bot → Plugins** → **Cài** thẻ `openclaw-fb-messenger`. Sau đó mở gateway ra HTTPS public (ngrok, Cloudflare Tunnel hoặc nginx/Caddy). Khai báo Callback URL `https://<domain>/webhooks/messenger` trong Meta → Messenger → Webhooks, subscribe `messages`.
+**Facebook Messenger:** sau khi tạo bot, vào **Công cụ** → chọn bot Messenger → **Cài đặt** thẻ `openclaw-fb-messenger`. Sau đó mở gateway ra HTTPS public (ngrok, Cloudflare Tunnel hoặc nginx/Caddy). Khai báo Callback URL `https://<domain>/webhooks/messenger` trong Meta → Messenger → Webhooks, subscribe `messages`.
 
 ```bash
 ngrok http --url=<ten>.ngrok-free.app 18789
@@ -192,22 +192,42 @@ Hướng dẫn chi tiết hơn và bảng xử lý sự cố: [docs/SETUP.vi.md]
 
 ---
 
-## 7. Biến môi trường của Setup
+## 7. Giao diện quản lý và đăng nhập
+
+Giao diện có sáu trang: **Tổng quan** (đường đi của tin nhắn từ kênh chat qua OpenClaw tới router, số đo CPU/RAM/ổ đĩa thật của máy chủ, hoạt động gần đây), **Agent**, **Tài khoản Zalo**, **Công cụ**, **Nhật ký** và **Cấu hình**.
+
+- Khi chạy trên máy cá nhân (`127.0.0.1`), giao diện mở ngay, không cần đăng nhập.
+- Khi có mật khẩu quản trị, mọi truy cập đều phải đăng nhập. Đặt mật khẩu trong **Cấu hình** → **Bảo mật**, hoặc bằng lệnh `node dist/cli.js --set-password`.
+- Truy cập đi qua reverse proxy (Nginx) hoặc từ máy khác bị từ chối cho tới khi có mật khẩu, nên lỡ mở ra internet trước khi đặt mật khẩu vẫn an toàn.
+
+## 8. Chạy trên VPS (bot.aivio.vn)
+
+Để bot chạy 24/7 và quản lý được từ điện thoại, deploy lên VPS Ubuntu bằng một script: cài Node.js 24, tạo user riêng, chạy giao diện như một service, cấu hình Nginx + HTTPS. Hướng dẫn đầy đủ: [deploy/README.vi.md](deploy/README.vi.md).
+
+```powershell
+scp install-vps.sh root@<IP_VPS>:/root/
+ssh -t root@<IP_VPS> "DOMAIN=bot.aivio.vn EMAIL=<email> bash /root/install-vps.sh"
+```
+
+## 9. Biến môi trường của Setup
 
 | Biến | Mặc định | Tác dụng |
 |---|---|---|
 | `AIVIO_ROUTER_MODE` | `remote` | Đặt `local` để bot mới dùng 9Router cục bộ (`127.0.0.1:20128`) thay cho router.aivio.vn |
 | `AIVIO_SETUP_SPEC` | `github:theanh828726/aivio-setup` | Nguồn tải khi bấm **Cập nhật**, ví dụ `create-aivio-bot@latest` sau khi publish npm |
+| `AIVIO_ADMIN_PASSWORD` | (trống) | Đặt mật khẩu quản trị khi khởi động; giá trị được hash rồi xoá khỏi môi trường |
+| `AIVIO_SETUP_HOME` | `~/.aivio-setup` | Thư mục chứa `auth.json` (mật khẩu quản trị) |
 
 ---
 
-## 8. Phát triển
+## 10. Phát triển
 
 ```text
 aivio-setup/
 |-- src/            ← mã nguồn: cli/, server/, setup/data/, setup/shared/, web/
 |-- dist/           ← bản build được commit (npx và clone chạy thẳng từ đây)
 |-- scripts/build.mjs
+|-- deploy/         ← script và hướng dẫn deploy VPS
 `-- docs/
 ```
 

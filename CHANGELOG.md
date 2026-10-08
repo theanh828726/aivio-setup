@@ -2,6 +2,31 @@
 
 Lịch sử thay đổi của Aivio Bot Setup. Lịch sử của bản gốc OpenClaw Setup (đến v5.17.5) nằm ở [docs/upstream](docs/upstream).
 
+## [1.2.0] - 2026-10-08
+
+### Giao diện quản lý mới
+- Khung mới với sidebar theo nhóm: **Tổng quan**, **Agent**, **Tài khoản Zalo**, **Công cụ**, **Nhật ký**, **Cấu hình**. Có chế độ sáng/tối, menu kéo ra trên điện thoại, phím Esc đóng hộp thoại.
+- **Tổng quan** vẽ đường đi của tin nhắn (kênh chat → OpenClaw → router) và chỉ ra tin nhắn đang dừng ở đâu, kèm nút sửa tại chỗ.
+- Số đo CPU, RAM, ổ đĩa là số thật của máy chủ (`/api/host/metrics`), thay cho số giả tính từ đường dẫn project ở bản cũ.
+- **Nhật ký** giữ 400 dòng gần nhất trên máy chủ, mở trang lúc nào cũng thấy; có ô lọc.
+- **Agent** chọn bot ở danh sách, sửa `SOUL.md` ngay bên cạnh. **Công cụ** bật kỹ năng/plugin theo từng bot.
+- Bỏ file `styles.css` cũ (126 KB) thay bằng `admin.css`.
+
+### Đăng nhập và bảo mật
+- Mật khẩu quản trị (scrypt), phiên đăng nhập bằng cookie ký HMAC, `HttpOnly`, `SameSite=Strict`, `Secure` khi HTTPS. Đổi mật khẩu đăng xuất mọi thiết bị.
+- Chưa có mật khẩu thì từ chối mọi request đi qua proxy hoặc từ máy khác.
+- Giới hạn 5 lần sai mật khẩu / 10 phút / IP; chặn request ghi dữ liệu có Origin lạ; header chống iframe và sniff.
+- Lệnh `--set-password` và biến `AIVIO_ADMIN_PASSWORD`.
+
+### Deploy VPS
+- `deploy/install-vps.sh`: Node.js 24, user riêng `aivio`, systemd user service, Nginx + Let's Encrypt cho `bot.aivio.vn`.
+- Server tìm được OpenClaw cài theo `NPM_CONFIG_PREFIX` của user.
+
+### Sửa lỗi
+- Lựa chọn sáng/tối và ngôn ngữ không được nhớ sau khi tải lại trang.
+- Đường dẫn workspace hiển thị sai (bị ghép hai lần) với project Native.
+- Đường dẫn project mặc định là thư mục giả (`/home/you/...`); nay dùng thư mục home thật của máy chủ.
+
 ## [1.1.0] - 2026-10-08
 
 ### Router

@@ -1,6 +1,6 @@
 {
   "name": "create-aivio-bot",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Aivio Bot Setup — Tạo chatbot AI cho Telegram, Zalo, Facebook Messenger trên OpenClaw, chạy qua HVDTAI Router",
   "main": "dist/cli.js",
   "bin": {
