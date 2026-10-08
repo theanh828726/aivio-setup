@@ -1,13 +1,13 @@
 /**
  * globals.d.ts
- * TypeScript ambient declarations for the OpenClaw Setup Wizard IIFE bundle.
+ * TypeScript ambient declarations for the Aivio Bot Setup wizard IIFE bundle.
  *
  * These variables exist at IIFE scope (shared across all concatenated setup/ files)
  * but are invisible to the IDE because there are no import/export statements.
  * This file gives VS Code IntelliSense visibility into the shared IIFE globals
  * and into variables that flow from generateNativeScript() scope into the os/ generators.
  *
- * Build: node build.mjs  →  dist/setup.js  (all files concatenated into one IIFE)
+ * Build: npm run build  →  dist/ (see scripts/build.mjs)
  */
 
 // ── IIFE-level data constants (from setup/data/) ──────────────────────────────

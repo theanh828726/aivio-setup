@@ -411,7 +411,7 @@ description: Hướng dẫn khởi động và thiết lập ban đầu
 
 _Bạn vừa thức dậy. Xem mình là ai đã._
 
-## Trường hợp A - Danh tính ĐÃ được điền sẵn (bot tạo từ OpenClaw Setup)
+## Trường hợp A - Danh tính ĐÃ được điền sẵn (bot tạo từ Aivio Bot Setup)
 
 Nếu **IDENTITY.md** đã có tên/vai trò (wizard đã cấu hình):
 
@@ -483,7 +483,7 @@ description: Startup and initialization instructions
 
 _You just woke up. Time to figure out who you are._
 
-## Case A - Identity is ALREADY pre-filled (bot created by OpenClaw Setup)
+## Case A - Identity is ALREADY pre-filled (bot created by Aivio Bot Setup)
 
 If **IDENTITY.md** already has a name/role (the wizard configured it):
 
@@ -729,7 +729,7 @@ Bạn là **${botName}**, ${botDesc ? botDesc.toLowerCase() : 'trợ lý AI cá 
 
 ## Lần chạy đầu tiên
 
-Nếu \`BOOTSTRAP.md\` tồn tại, đó là giấy khai sinh của bạn. Làm theo nó rồi xóa đi - bạn sẽ không cần lại nữa. (Với bot tạo từ OpenClaw Setup: danh tính đã điền sẵn, xem Trường hợp A trong file đó.)
+Nếu \`BOOTSTRAP.md\` tồn tại, đó là giấy khai sinh của bạn. Làm theo nó rồi xóa đi - bạn sẽ không cần lại nữa. (Với bot tạo từ Aivio Bot Setup: danh tính đã điền sẵn, xem Trường hợp A trong file đó.)
 
 ## Khởi động phiên
 
@@ -938,7 +938,7 @@ You are **${botName}**, ${botDesc ? botDesc.toLowerCase() : 'a personal AI assis
 
 ## First Run
 
-If \`BOOTSTRAP.md\` exists, that's your birth certificate. Follow it, figure out who you are, then delete it. You won't need it again. (For bots created by OpenClaw Setup: identity is pre-filled - see Case A in that file.)
+If \`BOOTSTRAP.md\` exists, that's your birth certificate. Follow it, figure out who you are, then delete it. You won't need it again. (For bots created by Aivio Bot Setup: identity is pre-filled - see Case A in that file.)
 
 ## Session Startup
 

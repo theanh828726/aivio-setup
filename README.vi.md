@@ -1,400 +1,227 @@
 <div align="center">
 
-# 🦞 OpenClaw Setup
+# 🎓 Học Viện Đào Tạo AI — Bot Setup
 
-### Một **giao diện Web** để tạo, triển khai & vận hành trợ lý AI đa bot miễn phí - không cần gõ terminal
+### Tạo chatbot AI cho Telegram, Zalo và Facebook Messenger, chạy trên OpenClaw, gọi AI qua HVDTAI Router
 
-*Chạy một lệnh, mở dashboard, bot lên sóng. Windows, macOS, Linux, VPS. Bot chạy thẳng trên máy, không cần Docker.*
+*Chạy một lệnh → mở giao diện web → tạo bot. Windows, macOS, Linux, VPS.*
 
 <p align="center">
-  <a href="https://github.com/tuanminhhole/openclaw-setup/releases"><img src="https://img.shields.io/badge/RELEASE-v5.17.5-0EA5E9?style=for-the-badge" alt="Version 5.17.5" /></a>
-  <a href="https://github.com/tuanminhhole/openclaw-setup?tab=MIT-1-ov-file"><img src="https://img.shields.io/badge/LICENSE-MIT-success?style=for-the-badge" alt="MIT License" /></a>
-  <a href="https://www.npmjs.com/package/create-openclaw-bot"><img src="https://img.shields.io/npm/v/create-openclaw-bot?style=for-the-badge&label=CLI&color=2563EB&logo=npm&logoColor=white" alt="NPM Version" /></a>
-  <a href="https://github.com/tuanminhhole/openclaw-setup/stargazers"><img src="https://img.shields.io/github/stars/tuanminhhole/openclaw-setup?style=for-the-badge&color=eab308&logo=github&logoColor=white" alt="GitHub Stars" /></a>
+  <img src="https://img.shields.io/badge/RELEASE-v1.1.0-0EA5E9?style=for-the-badge" alt="Version 1.1.0" />
+  <a href="https://router.aivio.vn"><img src="https://img.shields.io/badge/HVDTAI_ROUTER-router.aivio.vn-22C55E?style=for-the-badge" alt="HVDTAI Router" /></a>
+  <img src="https://img.shields.io/badge/license-MIT-8B5CF6?style=for-the-badge" alt="MIT" />
 </p>
 
-![Tiếng Việt](https://flagcdn.com/20x15/vn.png) **Tiếng Việt** · [![English](https://flagcdn.com/20x15/gb.png) English](README.md)
+**Tiếng Việt** · [English](README.md)
 
-> 🇻🇳 Mã nguồn mở & miễn phí. Dashboard tự động hóa 100% việc tạo dự án, triển khai và quản lý bot AI trên **Telegram · Zalo · Facebook Messenger** (Discord & Lark sắp ra mắt) - cài trong vài phút, không cần biết code.
-
-<p align="center" style="margin: 24px 0;">
-  <img src="https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/docs/openclaw-setup-vi.png" alt="OpenClaw Setup" width="90%" style="border-radius: 8px; border: 1px solid #333; margin-bottom: 16px;" />
-  <img src="https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/docs/dashboard-vi.png" alt="OpenClaw Dashboard" width="90%" style="border-radius: 8px; border: 1px solid #333; margin-bottom: 16px;" />
-  <img src="https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/docs/bot.png" alt="OpenClaw Bot in Action" width="90%" style="border-radius: 8px; border: 1px solid #333;" />
-</p>
+<img src="docs/dashboard.png" alt="Dashboard của Aivio Bot Setup" width="90%" />
 
 </div>
 
 ---
 
-<div align="center">
-  <a href="https://www.youtube.com/watch?v=hPusYX-5Pmw">
-    <img src="https://img.youtube.com/vi/hPusYX-5Pmw/maxresdefault.jpg" alt="Xem video hướng dẫn cài OpenClaw" width="820" />
-  </a>
-  <br />
-  <strong>▶ Xem video hướng dẫn cài OpenClaw + Zalo trên YouTube</strong>
-</div>
+## Cách hệ thống hoạt động
 
----
+Aivio Bot Setup là giao diện web chạy trên máy anh/chị, dùng để cài và cấu hình [OpenClaw](https://openclaw.ai). Bot chạy trong OpenClaw Gateway như một service của hệ điều hành, nhận tin từ các kênh chat và gọi AI qua **HVDTAI Router** tại `https://router.aivio.vn/v1`.
 
-## 🆕 Có gì mới trong v5.17.5
-
-- 🤖 **Giao diện không còn hiện 0 bot trong khi bot vẫn chạy** - model viết ở dạng chuỗi rút gọn (`"smart-route"` thay vì `{ primary, fallbacks }`) làm hỏng mọi lượt đọc config cùng lúc, xoá sạch danh sách bot ở mọi kênh kèm ô token và phiên bản plugin. Nay chấp nhận cả hai dạng.
-- 🔑 **Hết cảnh bot báo "authentication failed" dù key đúng** - OpenClaw đóng băng key giả `sk-no-key` lúc dựng project thành hồ sơ đăng nhập rồi cứ thế gửi mãi, khởi động lại không chữa được. Nay ghi key mới là dọn luôn hồ sơ cũ, và bot cài từ trước tự lành ở lần khởi động lại kế tiếp.
-- 💬 **Kênh Zalo Bot API chính chủ dùng được thật** - chọn **Zalo Bot API** khi tạo bot, dán Bot Token lấy ở `bot.zaloplatforms.com` là xong: không quét QR, không mượn tài khoản cá nhân, không cần webhook public (bot chạy long-polling). Bot vào được nhóm Zalo - mời bằng link trong mini app **Zalo Bot Creator**, trưởng nhóm bấm xác nhận; trong nhóm bot trả lời khi được @mention hoặc khi có người trả lời tin của nó. Plugin `openclaw-zalo-mod` giờ cũng cài được cho kênh này.
-- 🩹 **Cài native trên OpenClaw 2026.8 mượt từ phát đầu** - đợt này vá nốt chuỗi lỗi đo được khi dựng máy khách mới: cấu hình sinh ra sạch 100% với bộ soát khắt khe của OpenClaw mới, các bước cài tự chạy đúng thứ tự, và mọi thao tác khởi động lại/cài plugin không còn bị chặn giữa chừng.
-- 🔑 **Đăng nhập 9Router hoạt động trên Docker**: bản 9Router mới chặn mật khẩu mặc định với truy cập "từ xa" - mà trong Docker thì mọi truy cập đều bị tính là từ xa, nên trước đây không cách nào vào được bằng 123456. Giờ đăng nhập bình thường (vào rồi vẫn nên đổi mật khẩu).
-- 🧹 **Xoá project gỡ sạch 9Router cũ**: trước đây 9Router cũ còn chạy ngầm giữ cổng, làm lần cài mới tự tách sang cổng khác mà không ai hay - giờ xoá là sạch, cài lại đúng cổng chuẩn.
-- 🔌 **Máy native tự cài đủ plugin tìm kiếm web** (DuckDuckGo) kèm xác nhận quyền - hết cảnh bot khởi động vòng lặp vì thiếu một cái gật đầu.
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.16.3</b></summary>
-
-- 🚑 **Theo kịp OpenClaw 2026.8.1**: cài mới chạy mượt (đủ Docker lẫn native, Windows/macOS/Linux), máy cũ tự được chữa khi nâng cấp - tự dọn cấu hình lỗi thời, tự dời dữ liệu, tự gỡ file cũ từng khiến bot "câm".
-- 🤖 **Bot hết chối "không thấy file"**: file khách gửi qua chat được chỉ đường tận nơi cho AI.
-- 🔁 **9Router tự sống lại** sau khi máy chủ khởi động lại hay giao diện bảo trì.
-- 🔄 **Nút "Cập nhật" trong giao diện cập nhật thật** trên máy chủ cài kiểu chuẩn.
-- 🧭 **Một bản setup quản được cả máy đời cũ (2026.7) lẫn đời mới (2026.8)**.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.15.3</b></summary>
-
-- 🖥️ **"Điều khiển máy" - cho bot dùng máy của bạn**: nút trên thẻ mỗi bot, bật lên là bot chụp được màn hình, rê chuột, bấm, gõ phím và kéo thả trên máy đang chạy bot, bằng chính công cụ computer của OpenClaw. Vì nó thao tác như người ngồi trước máy nên mở được mọi ứng dụng đang cài, kể cả app vừa cài hôm qua, không cần khai báo danh sách. **Mặc định TẮT**, và chỉ dùng trên máy có màn hình.
-- 🌐 **Duyệt web chạy ngay trên mọi hệ điều hành**: máy để bàn thì bot dùng **Chrome thật** (profile đã đăng nhập, web ít nghi là bot), server thì tự mở Chromium headless - hết cảnh "không có trình duyệt" chỉ vì chưa mở Chrome.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.14.1</b></summary>
-
-- 🦞 **Bot Zalo thả reaction báo đã nhận tin**: một icon xuất hiện ngay trên tin bạn vừa gửi, nên bạn biết bot đã nhận trong khi nó còn đang viết trả lời. Chạy ở tầng kênh chat nên **không tốn token**. Bật mặc định cho bot Zalo mới; đổi icon hay tắt thì sửa `messages.ackReaction` trong `openclaw.json`. Cần Zalo Connect 3.0.15+.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.14.0</b></summary>
-
-- 🛠️ **Bot tự tạo skill cho chính nó**: nhờ bot làm một kỹ năng dùng lại ("tạo cho anh skill X") là nó viết xong và dùng được ngay trong cùng câu trả lời - không còn bước chờ duyệt, không phải sửa cấu hình. Skill lưu vào `skills/<tên>/SKILL.md` trong workspace của bot và tự nạp. **Bot cũ tự nhận khi cập nhật.**
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.13.9</b></summary>
-
-- 🧠 **Trí nhớ always-on cho mọi bot (learning-memory)**: plugin context-engine mới nạp `MEMORY.md` + `USER.md` đã chắt lọc vào **MỌI lượt** - kể cả trong nhóm (điều recall mặc định bỏ qua). Bot hết quên ngữ cảnh/quy tắc theo thời gian: không còn "nói leo" khi không ai gọi, không hỏi lại điều bạn đã dặn. Tự cài cho bot mới + có card 1-chạm trên dashboard.
-- 🧹 **Bỏ TencentDB Agent Memory**, thay bằng engine always-on ở trên (không cần dịch vụ ngoài). Bot cũ tự migrate khi cập nhật - *skill* learning-memory cũ và plugin TencentDB được gỡ tự động.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.13.4</b></summary>
-
-- ⚙️ **Trang Cài đặt mới**: chọn giao diện (nút gạt Sáng/Tối), ngôn ngữ (VI/EN) và múi giờ ngay trong dashboard - có ở cả sidebar lẫn thanh điều hướng mobile.
-- 🕒 **Lịch & cron chạy đúng giờ địa phương**: bot tạo mới nhận múi giờ rõ ràng, nên nhắc hẹn/cron không còn lệch 1 ngày quanh nửa đêm (lỗi UTC-vs-local có thể đặt lịch vào quá khứ). Đã siết hướng dẫn lập lịch toàn diện (giờ local + múi giờ, nơi gửi rõ ràng, ID nhóm dạng thô).
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.13.0</b></summary>
-
-- 🟢 **Trạng thái Zalo trực tiếp trên từng thẻ bot**: mỗi bot Zalo cá nhân hiển thị riêng trạng thái kết nối và đăng nhập, kèm badge xanh gọn khi đã sẵn sàng.
-- 👥 **Nhận diện đa tài khoản chính xác**: Setup đọc runtime Zalo Connect theo từng tài khoản thật, nên project có nhiều bot Zalo không còn bị gom thành một trạng thái “chưa rõ”.
-- ✨ **Khu điều khiển Zalo gọn hơn**: Làm mới và Đăng nhập lại nằm cùng hàng phía trên danh sách bot; phiên bản Zalo Connect và Zalo Mod được đưa sang cột trạng thái chung.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.12.0</b></summary>
-
-- 💬 **OpenClaw Zalo Connect, sẵn sàng trong một chạm**: tạo bot Zalo cá nhân hoặc bấm **Đăng nhập Zalo**, Setup tự chuẩn bị channel rồi mở luồng quét QR ngay trên dashboard.
-- ⚡ **Cài một lần, kết nối lại nhanh hơn**: nếu Zalo Connect đã có, Setup dùng lại bản hiện tại thay vì tải lại mỗi lần đăng nhập hay restart.
-- ✨ **Trải nghiệm Zalo native gọn hơn**: mention nhóm, reaction và quản trị dùng chung một Zalo runtime được duy trì; luồng tích hợp cũ và tiện ích Sticker đã được gỡ khỏi Setup.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.11.1</b></summary>
-
-- 📄 **Workspace mặc định dựng lại theo bộ file chuẩn OpenClaw**: bot tạo mới nhận đủ 7 file workspace gốc (`AGENTS`/`BOOTSTRAP`/`HEARTBEAT`/`IDENTITY`/`SOUL`/`TOOLS`/`USER.md`) làm khung, quy tắc riêng của dự án gắn thành mục bổ sung đánh dấu rõ - đủ VI + EN, mọi kiểu bot.
-- 🗄️ **Hết lỗi SQLite "disk I/O error" trên Docker Desktop**: `.openclaw/state` chuyển sang named volume trên macOS/Windows (khóa WAL không sống nổi qua virtiofs); Linux/VPS vẫn bind mount như cũ.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.11.0</b></summary>
-
-- 🚀 **Facebook Messenger, cài 1 chạm**: plugin `fb-messenger` giờ đã **public trên ClawHub** và cài ngay trên dashboard - tạo bot Messenger, mở **Bot → Plugins**, bấm **Cài** ở thẻ `openclaw-fb-messenger`. Webhook + Graph API, tự đổi User→Page token, xác minh HMAC.
-- 🐳 **Chỉ còn Docker, cực ổn định**: loại bỏ kiểu cài native (không Docker) để tập trung cho luồng Docker chạy hoàn hảo & ổn định trên Windows / macOS / Linux / VPS, kèm tự cài Docker đa hệ điều hành.
-- 🖥️ **Chrome-debug trên VPS headless**: relay Chrome-debug của browser-automation giờ chạy được trên VPS headless (giới hạn theo bridge-IP, tự mở ufw); trình sửa file bot cũng lưu được file text không phải `.md`.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.10.1</b></summary>
-
-- 🔧 **Sửa lỗi Docker**: update plugin giữ nguyên port dashboard zalo-mod, và ổ đĩa/thư mục đã cấp quyền (kể cả nguyên ổ Windows như `D:\`) không còn bị mất sau khi rebuild.
-- 🔄 **Tự khởi động lại tiến trình (native)**: cài native giờ đăng ký gateway + 9router thành service hệ điều hành (macOS launchd, Linux systemd, Windows detached), tự chạy lại khi crash/reboot - như `restart: always` của Docker. Best-effort, lỗi thì fallback chạy detached.
-- 🔐 **Sync 9router lần đầu - đã sửa**: không còn tắt vĩnh viễn "Require login". `sync.js` đăng nhập bằng mật khẩu mặc định `123456`, tạo combo `smart-route` từ provider đang active **một lần** rồi dừng. Require login giữ ON (đổi mật khẩu sau); model-call `/v1` không bị ảnh hưởng.
-- 📁 **Đường dẫn workspace native - đã sửa**: `workspace` của agent giờ là tương đối, persona/memory/skills nằm đúng chỗ khi cài native (trước là đường dẫn tuyệt đối kiểu container → trỏ sai trên host).
-- 🧩 **Không ghi đè khối `meta` trong config**: generator ngừng seed `meta` để OpenClaw tự quản - tránh lỗi parse config do `lastTouchedVersion` là dải version.
-- 💅 **UI dashboard gọn hơn**: nút tắt Bot/Cài đặt ở hero, badge version plugin, layout toggle tính năng, responsive/mobile, bỏ tiêu đề trùng ở tab dashboard.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.9.0</b></summary>
-
-- 🧠 **TencentDB Agent Memory - cài 1 chạm**: Plugin bộ nhớ mới ngay trên UI. Bộ nhớ phân tầng 4 lớp (L0-L3) + nén ngữ cảnh, giữ session dài mạch lạc và **tiết kiệm tới ~61% token**. Chạy local hoàn toàn (SQLite), không cần API key, sẵn sàng cho Docker.
-- ⚡ **Cấu hình tiết kiệm token mặc định cho mọi bot mới**: Tự có context pruning (cache-TTL) + compaction `safeguard` - **hội thoại dài rẻ hơn & sắc nét hơn**, không cần chỉnh tay.
-- 🎯 **Skills/Plugins theo từng bot & từng kênh**: Cài/bật/tắt skill chỉ cho **đúng 1 bot** (không lan sang bot khác); bảng chỉ hiện thứ phù hợp với kênh (Zalo / Telegram / Messenger).
-- 📤 **Gửi file ổn định trên Zalo & Telegram**: Bot đã biết quy trình gửi đúng (`media/outbound` + tool `message`) và dùng định dạng hiện đại như `.xlsx` - hết cảnh "không gửi được file".
-- 🐳 **Nút điều khiển Docker 1 chạm**: Restart / Rebuild container bot và cấp quyền ổ đĩa (mount thư mục host bất kỳ vào `/mnt/<tên>`, đa OS) ngay trên dashboard - khởi động lại bot mà không cần gõ lệnh.
-- ⚡ **Trang Dashboard & Bot load nhanh hơn**: Việc dò runtime/version giờ chỉ chạy **một lần** rồi cache thay vì lặp lại mỗi lần tải trang - bot status giảm từ ~4s xuống ~3ms ở các lần tải sau. Cache tự xoá khi update/rebuild/restart/cài đặt.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.8.24 (Tự động cập nhật Launcher)</b></summary>
-
-- **Sửa lỗi: Lệch phiên bản cache Launcher**: Tự động phát hiện nếu launcher đang chạy (tải qua `npx`) có phiên bản mới hơn hoặc khác với bản đang cache trong `~/.openclaw-setup` và tự nâng cấp tương ứng.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.8.23 (Tích hợp Skill Siêu Trí Nhớ)</b></summary>
-
-- **Mới: Siêu Trí Nhớ Dài Hạn & Tự Đóng Gói Kỹ Năng (learning-memory)**: Tích hợp sẵn skill tự học và tự tiến hóa kỹ năng mới cho Agent.
-  - Tự động ghi nhận thông tin, kiến thức và chỉ dẫn mới từ người dùng vào file `MEMORY.md` để ghi nhớ lâu dài.
-  - Cho phép Agent tự đóng gói các quy trình làm việc hoặc logic mới học được thành mã nguồn `.js` và file hướng dẫn `SKILL.md` trực tiếp vào thư mục `./skills/`, giúp bot tự phát triển kỹ năng mà không cần lập trình viên can thiệp.
-  - Hỗ trợ chạy tự động script cài đặt (postinstall) mượt mà trên mọi nền tảng (Docker, Windows, macOS, Linux) ngay sau khi cài từ ClawHub.
-- **Mới: Quản lý Skill trên UI**: Thêm nút bật/tắt và quản lý cài đặt skill "Siêu Trí Nhớ Dài Hạn" trực tiếp trên giao diện quản trị Web UI Setup.
-
-</details>
-
-<details>
-<summary><b>Trước đó: Có gì mới trong v5.8.22</b></summary>
-
-- **Hỗ trợ Skill Tạo ảnh Infographic chuyên nghiệp**: Tích hợp hoàn toàn công cụ tạo ảnh infographic, poster tự động thông qua API của 9Router. Tự động sinh mã nguồn script `image-generator.js` đồng bộ API credentials từ `openclaw.json` và hướng dẫn `SKILL.md` cụ thể giúp Agent nắm vững cấu trúc prompt, font chữ tiếng Việt, layout và quy tắc thiết kế ảnh.
-- **Tối ưu hóa: Đơn giản hóa sinh file TOOLS.md**: Điều chỉnh generator của `TOOLS.md` để sinh ra nội dung tĩnh gọn gàng, tập trung định hướng Agent đọc chi tiết các tài liệu hướng dẫn skill tương ứng.
-- **Tối ưu hóa: Chuẩn hóa danh sách Tài liệu tham chiếu trong AGENTS.md**: Cập nhật danh sách tài liệu tham chiếu được tạo trong file `AGENTS.md` (cho cả 2 chế độ single/relay và cả tiếng Việt/tiếng Anh) để khớp chính xác cấu trúc mới gồm đúng 9 tài liệu cốt lõi, loại bỏ các file không còn phù hợp (`TEAMS.md` cho single-bot, `BROWSER.md`) và chuẩn hóa phần mô tả.
-
-</details>
-
----
-
-## ✨ Tính năng nổi bật
-
-- 🤖 **Đa kênh** - Telegram (1 hoặc nhiều bot), Zalo Bot API, Zalo Personal (Cá nhân), và Facebook Messenger (Discord & Lark sắp ra mắt).
-- 🧑‍🤝‍🧑 **Đội bot (Multi-bot Team)** - Chạy đồng thời nhiều bot Telegram/Zalo, tự động đồng bộ hóa tài liệu và phối hợp làm việc theo nhóm.
-- 🧠 **Đa nhà cung cấp AI qua 9Router** - Dễ dàng định tuyến đến Google Gemini, Claude, GPT-4o, OpenRouter, Ollama (chạy local offline).
-- 🧩 **Kỹ năng (Skills)** - Web Search, Browser Automation (Chrome CDP thực tế), Cron/Scheduler lập lịch.
-- 🔌 **Plugin tích hợp** - Cài đặt nhanh các plugin nâng cao (`openclaw-zalo-mod`, Facebook Crawler...) chỉ bằng 1 nút nhấn trên UI.
-- 🔀 **9Router tích hợp** - Cầu nối AI proxy miễn phí không cần API key thông qua đăng nhập OAuth.
-- 🔒 **An toàn & Riêng tư** - Toàn bộ cấu hình và API key chỉ lưu trên thiết bị của bạn.
-
----
-
-## 🗺️ Cách cài đặt nhanh nhất
-
-### 1️⃣ Cách 1 - Cài nhanh (Khuyên dùng)
-
-Mở terminal và chạy đúng một lệnh (chạy trên macOS, Linux & Windows - cần Node.js 24 LTS):
-
-```bash
-npx create-openclaw-bot
+```text
+Telegram      ─┐
+Zalo Bot API  ─┤
+Zalo cá nhân  ─┼─► OpenClaw Gateway ──HTTPS──► router.aivio.vn ──► Gemini · Claude · OpenAI
+Messenger     ─┘   (127.0.0.1:18789)           (combo smart-route)
+                          ▲
+                          │ cài và cấu hình
+                   Aivio Bot Setup (127.0.0.1:51789)
 ```
 
-Lệnh này tự tải wizard, chạy server và **mở giao diện Setup** trên trình duyệt tại **http://127.0.0.1:51789**.
+| Thành phần | Phiên bản / vị trí |
+|---|---|
+| Aivio Bot Setup | v1.1.0 |
+| OpenClaw | `openclaw@2026.9.2` (cài global qua npm) |
+| Router AI | `https://router.aivio.vn/v1`, model `9router/smart-route` |
+| Cấu hình bot | `<project>/.openclaw/openclaw.json` và `<project>/.env` |
 
-### 2️⃣ Cách 2 - Chạy mã mới nhất trực tiếp từ GitHub
+---
 
-Dùng cách này nếu bạn muốn lấy code mới nhất trực tiếp từ GitHub:
+## 1. Chuẩn bị
+
+| Phần mềm | Yêu cầu | Kiểm tra |
+|---|---|---|
+| Node.js | 24 LTS trở lên | `node -v` |
+| Git | Bản mới, có trong PATH | `git --version` |
 
 ```bash
-npx github:tuanminhhole/openclaw-setup
+# Windows (PowerShell)
+winget install OpenJS.NodeJS.LTS
+winget install Git.Git
+
+# macOS
+brew install node@24 git
+
+# Ubuntu / Debian / VPS
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt-get install -y nodejs git
 ```
 
-> **Cách này bắt buộc máy phải cài Git.** Hãy cài [Git](https://git-scm.com/downloads) và kiểm tra lệnh `git` chạy được trong terminal trước; nếu thiếu Git, npm không thể tải repository từ GitHub.
+Trên VPS, bật linger để bot không tắt khi đóng SSH: `sudo loginctl enable-linger $USER`.
 
-### 3️⃣ Cách 3 - Clone thủ công (dành cho developer)
+---
 
-Dành cho người muốn lấy full source. Chạy lần lượt từng dòng:
+## 2. Chạy giao diện Setup
+
+**Cách 1 — chạy thẳng từ GitHub (khuyên dùng):**
 
 ```bash
-git clone https://github.com/tuanminhhole/openclaw-setup.git
-cd openclaw-setup
-npm install
+npx --yes github:theanh828726/aivio-setup
+```
+
+**Cách 2 — clone repo:**
+
+```bash
+git clone https://github.com/theanh828726/aivio-setup.git
+cd aivio-setup
 npm start
 ```
 
-Sau đó mở **http://127.0.0.1:51789** nếu trình duyệt không tự bật.
+Giao diện mở tại `http://127.0.0.1:51789`. Chạy lại đúng lệnh trên để mở lại sau này. Nếu Setup đang chạy sẵn, lệnh mới sẽ dùng lại instance đó.
 
-> ⚠️ `npm install` / `npm start` **chỉ chạy được khi bạn đang ở trong thư mục `openclaw-setup` đã clone**. Nếu dùng một trong hai cách npx, lần sau chỉ cần chạy lại đúng lệnh npx đó để mở Setup.
+| Tuỳ chọn | Tác dụng |
+|---|---|
+| `--port=<cổng>` | Đổi cổng giao diện (mặc định 51789) |
+| `--host=<địa chỉ>` | Địa chỉ lắng nghe (mặc định 127.0.0.1) |
+| `--project-dir=<đường dẫn>` | Mở thẳng một project |
+| `--no-open` | Không tự mở trình duyệt (dùng trên VPS) |
+| `-v`, `-h` | In phiên bản / trợ giúp |
 
-### 🔁 Mở lại giao diện sau này
+Khi chạy bằng `npm start`, truyền tuỳ chọn sau `--`, ví dụ `npm start -- --no-open`.
 
-Chạy lại lệnh khuyên dùng. Setup sẽ tự nhận diện và mở project hiện có:
+Trên VPS không có trình duyệt, mở SSH tunnel từ máy của anh/chị rồi vào `http://localhost:51789`:
 
 ```bash
-npx create-openclaw-bot
+ssh -L 51789:127.0.0.1:51789 -L 18789:127.0.0.1:18789 -L 18790:127.0.0.1:18790 <user>@<server>
 ```
 
-### ⬆️ Cập nhật lên phiên bản mới
+---
 
-Bấm nút **Cập nhật** ở **góc trên bên phải giao diện Setup**. Hệ thống tự tải phiên bản mới và khởi động lại UI; tab đang mở sẽ tự kết nối lại.
+## 3. Chuẩn bị HVDTAI Router
+
+Bot gọi model `smart-route`, nên router phải có một combo tên đúng `smart-route`.
+
+1. Đăng nhập `https://router.aivio.vn`.
+2. **Providers** → kết nối Gemini, Claude, OpenAI… (OAuth hoặc API key).
+3. **Combos** → tạo combo tên `smart-route` → thêm model theo thứ tự ưu tiên.
+4. **Endpoints** → tạo API key cho bot → copy.
+
+Kiểm tra key trước khi gắn vào bot:
+
+```bash
+curl -s https://router.aivio.vn/v1/chat/completions \
+  -H "Authorization: Bearer <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"smart-route","messages":[{"role":"user","content":"Xin chào"}]}'
+```
+
+Kết quả đúng là JSON có `choices[0].message.content`. Lỗi 401 nghĩa là key sai. Lỗi model not found nghĩa là chưa có combo `smart-route`.
 
 ---
 
-## 📋 Yêu cầu hệ thống
+## 4. Cài OpenClaw và gắn API key
 
-- **Node.js 24 LTS** (bắt buộc). Cả trình cài đặt lẫn bot đều chạy bằng Node. [Tải Node.js](https://nodejs.org/).
-  Máy chưa có Node thì trình cài đặt tự cài giúp bạn.
-- **Git**: Đã cài đặt và có trong biến môi trường PATH.
-- **Không cần Docker nữa.** Từ bản 5.17.5 bot chạy thẳng trên máy.
+1. Tab **Cài đặt** → chọn hệ điều hành → chế độ **Native** (Docker đã ngừng cho project mới).
+2. **Tạo Bot** → nhập đường dẫn project, ví dụ `D:\aivio-bot`, `/Users/<tên>/aivio-bot`, `/home/<tên>/aivio-bot` → theo dõi Nhật ký đến khi xong.
+3. Tab **Dashboard** → thẻ **HVDTAI Router** → bấm **Nhập key** → dán API key ở bước 3 → **Xác nhận**.
 
----
+<img src="docs/router-key.png" alt="Nhập API key cho HVDTAI Router" width="70%" />
 
-## 🚀 Hướng dẫn cài đặt từng bước
-
-> Lần đầu dùng? Làm lần lượt theo thứ tự - không cần gõ terminal ngoài bước mở giao diện.
-
-**1. Mở giao diện Setup** - chạy lệnh cài ở trên, dashboard sẽ mở trên trình duyệt.
-
-**2. Chọn Hệ điều hành** rồi bấm tiếp. Chế độ chạy giờ chỉ còn **Native**, tức bot chạy thẳng trên máy bạn.
-Ô Docker vẫn hiện nhưng đã khoá, bấm không được. Lý do ghi ngay trên màn hình.
-
-**3. Nhập đường dẫn & tên project** - nhập đường dẫn thư mục và tên project (ví dụ tên: `bot`), rồi bấm **Cài đặt**. Ví dụ đường dẫn:
-- Windows: `D:\bot`
-- macOS: `/Users/<tên-bạn>/bot`
-- Linux: `/home/<tên-bạn>/bot`
-
-**4. Đăng nhập 9Router** - bấm nút **Mở website 9Router**, đăng nhập bằng mật khẩu mặc định **`123456`**.
-
-**5. Tạo API key (9Router)** - vào mục **Endpoints**, tạo một API key mới. Sau đó mở thư mục project → file `openclaw.json` → kéo xuống mục **`models`** → dán key vào ô `apiKey` còn trống rồi lưu.
-
-**6. Kết nối Provider (9Router)** - vào mục **Providers**, chọn provider bạn muốn; hệ thống tự kết nối.
-
-**7. Tạo Combo định tuyến (9Router)** - vào mục **Combos**, tạo combo đặt tên **đúng** là **`smart-route`** và thêm các models cần dùng.
-
-**8. Tạo bot** - quay lại giao diện Setup, chọn kênh, nhập thông tin bot + thông tin cá nhân, rồi bấm **Tạo bot**.
-
-**9. Restart & test** - khởi động lại container bot, rồi nhắn tin cho bot để kiểm tra. 🎉
+Lưu key ở đây sẽ ghi vào `openclaw.json` và `.env` (`NINE_ROUTER_API_KEY`). Đồng thời, Setup xoá auth profile cũ mà OpenClaw còn giữ key giả `sk-no-key`, nên bot dùng key mới ngay từ lượt sau.
 
 ---
 
-## 🧠 Các Provider AI được hỗ trợ (Thông qua 9Router)
+## 5. Tạo bot và kết nối kênh
 
-- [9Router GitHub](https://github.com/decolua/9router)
+Tab **Bot** → **Tạo bot** → chọn kênh → điền tên, mô tả, thông tin chủ nhân (Owner) → **Tạo bot**. Tính cách bot sửa trong `SOUL.md`, `AGENTS.md` ở mục file của bot.
+
+| Kênh | Cần chuẩn bị | Cách nhận tin |
+|---|---|---|
+| Telegram | Bot token từ [@BotFather](https://t.me/BotFather) | Long-polling, không cần webhook |
+| Zalo Bot API | Bot token từ [bot.zaloplatforms.com](https://bot.zaloplatforms.com) | Long-polling, không cần webhook |
+| Zalo cá nhân | Một tài khoản Zalo **phụ**, quét QR | Plugin OpenClaw Zalo Connect (không chính thức) |
+| Facebook Messenger | Meta App, Page token, App Secret, Verify Token | Webhook HTTPS public |
+
+**Zalo Bot API:** kiểm tra token bằng `curl https://bot-api.zaloplatforms.com/bot<token>/getMe`. Muốn đưa bot vào nhóm, mở mini app **Zalo Bot Creator** → **Mời Bot vào nhóm** → trưởng nhóm bấm link xác nhận. Trong nhóm, bot chỉ phản hồi khi được @mention hoặc khi có người reply tin của bot.
+
+**Zalo cá nhân:** tạo bot xong bấm **Đăng nhập Zalo** và quét QR. Tự động hoá tài khoản cá nhân có thể vi phạm điều khoản Zalo, nên chỉ dùng tài khoản phụ.
+
+**Facebook Messenger:** sau khi tạo bot, mở **Bot → Plugins** → **Cài** thẻ `openclaw-fb-messenger`. Sau đó mở gateway ra HTTPS public (ngrok, Cloudflare Tunnel hoặc nginx/Caddy). Khai báo Callback URL `https://<domain>/webhooks/messenger` trong Meta → Messenger → Webhooks, subscribe `messages`.
+
+```bash
+ngrok http --url=<ten>.ngrok-free.app 18789
+curl "https://<domain>/webhooks/messenger?hub.mode=subscribe&hub.verify_token=<VERIFY_TOKEN>&hub.challenge=ping"   # phải trả về: ping
+```
 
 ---
 
-## 🔌 Kênh trò chuyện hỗ trợ
+## 6. Vận hành bằng OpenClaw CLI
 
-- **Telegram**: Lấy token bot chính thức từ `@BotFather`.
-- **Zalo Bot API**: Lấy thông tin kết nối chính thức từ [developers.zalo.me](https://developers.zalo.me).
-- **Zalo Cá nhân (Zalo Personal)**: Kích hoạt cực nhanh bằng cách quét mã QR hiển thị ngay trên Dashboard OpenClaw.
-- **Facebook Messenger**: Qua plugin `fb-messenger` (public trên ClawHub, cài ngay trên giao diện Setup) - chỉ cần dùng Page token.
-- **Discord**: _Sắp ra mắt._
-- **Lark**: _Sắp ra mắt._
+Hằng ngày dùng các nút trên giao diện là đủ. Khi cần gõ lệnh, đứng trong thư mục project và đặt biến môi trường trước:
+
+```bash
+cd <project>
+export OPENCLAW_HOME="$PWD/.openclaw" OPENCLAW_STATE_DIR="$PWD/.openclaw"
+# PowerShell: $env:OPENCLAW_HOME="$PWD\.openclaw"; $env:OPENCLAW_STATE_DIR="$PWD\.openclaw"
+```
+
+| Việc cần làm | Lệnh |
+|---|---|
+| Bật / tắt / khởi động lại bot | `openclaw daemon start` · `stop` · `restart` |
+| Trạng thái gateway | `openclaw gateway status --json --no-probe` |
+| Trạng thái kênh | `openclaw channels status` |
+| Đăng nhập lại Zalo cá nhân | `openclaw channels login --channel zalo-connect --account default` |
+| Kiểm tra cấu hình | `openclaw config validate` |
+| Xem router đang dùng | `openclaw config get "models.providers['9router'].baseUrl" --json` |
+| Tự sửa cấu hình lỗi thời | `openclaw doctor --fix` |
+| Xem / xoá auth profile của model | `openclaw models auth list` · `openclaw models auth logout <profileId> --yes` |
+
+| Cổng | Dịch vụ |
+|---|---|
+| 51789 | Giao diện Setup |
+| 18789 | OpenClaw Gateway (Control UI, webhook Messenger) |
+| 18790 | Zalo Mod dashboard (luôn bằng gateway + 1) |
+
+Hướng dẫn chi tiết hơn và bảng xử lý sự cố: [docs/SETUP.vi.md](docs/SETUP.vi.md).
 
 ---
 
-## 📁 Cấu trúc thư mục dự án
+## 7. Biến môi trường của Setup
+
+| Biến | Mặc định | Tác dụng |
+|---|---|---|
+| `AIVIO_ROUTER_MODE` | `remote` | Đặt `local` để bot mới dùng 9Router cục bộ (`127.0.0.1:20128`) thay cho router.aivio.vn |
+| `AIVIO_SETUP_SPEC` | `github:theanh828726/aivio-setup` | Nguồn tải khi bấm **Cập nhật**, ví dụ `create-aivio-bot@latest` sau khi publish npm |
+
+---
+
+## 8. Phát triển
 
 ```text
-openclaw-setup/
-|-- README.md                ← Tài liệu tiếng Anh
-|-- README.vi.md             ← Hướng dẫn tiếng Việt (Bạn đang đọc)
-|-- package.json             ← Điểm cấu hình NPM và scripts khởi chạy
-|-- dist/                    ← Mã nguồn đã biên dịch của Web UI và CLI
-`-- src/                     ← Mã nguồn gốc (giao diện, máy chủ cục bộ API, script build)
+aivio-setup/
+|-- src/            ← mã nguồn: cli/, server/, setup/data/, setup/shared/, web/
+|-- dist/           ← bản build được commit (npx và clone chạy thẳng từ đây)
+|-- scripts/build.mjs
+`-- docs/
 ```
 
----
-
-## ❓ Câu hỏi thường gặp
-
-<details>
-<summary><b>Làm thế nào để dừng hoặc chạy lại bot?</b></summary>
-Giờ đây bạn không cần gõ lệnh nữa! Chỉ cần mở Web UI Setup lên, truy cập tab <b>Bot</b> và sử dụng nút bấm <b>Start / Stop / Recreate</b> để quản lý trực quan tiến trình hoạt động của Bot.
-</details>
-
-<details>
-<summary><b>Sửa tính cách bot và danh sách tác vụ ở đâu?</b></summary>
-Bạn có thể sửa trực tiếp ngay trên trình duyệt bằng cách truy cập tab <b>Bot</b>, cuộn xuống phần <b>Bot file tree</b> và click chọn file cần sửa (ví dụ: `SOUL.md`, `AGENTS.md`). Sau khi sửa xong nhấn <b>Save</b> là cấu hình sẽ được cập nhật ngay lập tức.
-</details>
-
-<details>
-<summary><b>Tôi có thể đổi model AI sau khi cài không?</b></summary>
-Hoàn toàn được. Bạn có thể sửa trực tiếp file `openclaw.json` ở giao diện web của setup, hoặc chạy lại lệnh cài đặt trỏ vào thư mục cũ để cập nhật nhanh cấu hình.
-</details>
+- Chỉ sửa trong `src/`, rồi chạy `npm run build` để sinh lại `dist/`.
+- `npm run check:dist` báo lỗi nếu `dist/` lệch với `src/`. Nên chạy trước mỗi commit.
+- Phát hành: tăng `version` trong `package.json` → `npm run build` → commit → push `master`. Người dùng bấm **Cập nhật** sẽ nhận bản mới.
+- Publish npm (tuỳ chọn): `npm login` rồi `npm publish`. Sau đó `npx create-aivio-bot` dùng được, và có thể đặt `AIVIO_SETUP_SPEC=create-aivio-bot@latest`.
 
 ---
 
-## 🔗 Liên kết hữu ích
+## Ghi công
 
-- [OpenClaw Docs](https://openclaw.ai/docs)
-- [9Router GitHub](https://github.com/decolua/9router)
-- [Google AI Studio](https://aistudio.google.com/)
-- [Telegram BotFather](https://t.me/BotFather)
-- [Zalo Developer Platform](https://developers.zalo.me)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- [ClawHub (Skills)](https://clawhub.com)
+Phát triển bởi **[Học Viện Đào Tạo AI](https://hocvienai.com)**.
 
----
+Dựa trên [OpenClaw Setup](https://github.com/tuanminhhole/openclaw-setup) của tuanminhhole (MIT). Lịch sử thay đổi của bản gốc nằm ở [docs/upstream](docs/upstream). Bot chạy trên [OpenClaw](https://openclaw.ai); các plugin Zalo Connect, Zalo Mod, fb-messenger được cài từ [ClawHub](https://clawhub.com).
 
-## ⭐ Sao của repository
-
-<div align="center">
-
-<a href="https://github.com/tuanminhhole/openclaw-setup/stargazers"><img src="https://img.shields.io/github/stars/tuanminhhole/openclaw-setup?style=for-the-badge&logo=github&color=eab308" alt="GitHub Stars" /></a>
-<a href="https://github.com/tuanminhhole/openclaw-setup/forks"><img src="https://img.shields.io/github/forks/tuanminhhole/openclaw-setup?style=for-the-badge&logo=github&color=0ea5e9" alt="GitHub Forks" /></a>
-
-</div>
-
----
-
-## 🙏 Lời cảm ơn
-
-- [OpenClaw](https://openclaw.ai) - AI Gateway framework
-- [9Router](https://github.com/decolua/9router) - Open-source AI proxy (OAuth-based, no API keys)
-- [ClawHub](https://clawhub.com) - Kho đăng ký các kỹ năng của bot
-- [TheSVG](https://thesvg.org) - Kho biểu tượng nhãn hiệu SVG chất lượng cao
-
----
-
-## 🙌 Tác giả & Đóng góp
-
-Làm bởi **[tuanminhhole (Kent)](https://github.com/tuanminhhole)** như một món quà mở cho cộng đồng.
-Mọi góp ý / PR cải tiến đều được hoan nghênh. Nếu thấy hữu ích, hãy ⭐ repo để nhiều người biết tới nhé!
-
----
-
-## 🦞 Hệ sinh thái OpenClaw (cùng tác giả)
-
-Các repo đi kèm để bạn dựng một trợ lý AI "tự vận hành" hoàn chỉnh:
-
-**🚀 Cài đặt & khung nền**
-- [openclaw-setup](https://github.com/tuanminhhole/openclaw-setup) - *(repo này)* Setup bot AI miễn phí bằng OpenClaw + 9Router (Telegram/Zalo/Messenger, Docker)
-- [vietbrain](https://github.com/tuanminhhole/vietbrain) - Bộ khung "Bộ Não Thứ Hai" tiếng Việt cho Obsidian (sẵn sàng AI)
-
-**🔌 Plugin (runtime)**
-- [openclaw-fb-messenger](https://github.com/tuanminhhole/openclaw-fb-messenger) - Kênh Facebook Messenger (webhook + Graph API), cài ngay trên giao diện Setup
-- [openclaw-telegram-multibot-relay](https://github.com/tuanminhhole/openclaw-telegram-multibot-relay) - Multibot Telegram relay, delegation & cron nhắc lịch native
-- [openclaw-zalo-connect](https://github.com/tuanminhhole/openclaw-zalo-connect) - Channel/runtime Zalo cá nhân với đăng nhập QR, mention native và thao tác nhóm
-- [openclaw-zalo-mod](https://github.com/tuanminhhole/openclaw-zalo-mod) - Quản lý nhóm Zalo zero-token (slash command, anti-spam, warn, memory)
-- [openclaw-browser-automation](https://github.com/tuanminhhole/openclaw-browser-automation) - Smart Search & Browser Automation
-- [openclaw-facebook-crawler](https://github.com/tuanminhhole/openclaw-facebook-crawler) - Crawl dữ liệu Facebook
-- [openclaw-n8n-facebook-poster](https://github.com/tuanminhhole/openclaw-n8n-facebook-poster) - Tự động đăng Facebook qua n8n
-
-**🧩 Skill**
-- [openclaw-learning-memory](https://github.com/tuanminhhole/openclaw-learning-memory) - Context engine trí nhớ always-on (nạp MEMORY.md + USER.md vào mọi lượt, kể cả nhóm)
-- [openclaw-skill-infographic](https://github.com/tuanminhhole/openclaw-skill-infographic) - Tạo infographic
-
----
-
-<div align="center">
-<sub>🦞 <b>openclaw-setup</b> · một phần của hệ sinh thái <a href="https://github.com/tuanminhhole">tuanminhhole (Kent)</a> · MIT License</sub>
-</div>
+MIT License — xem [LICENSE](LICENSE).
