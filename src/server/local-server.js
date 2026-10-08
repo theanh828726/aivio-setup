@@ -1,12 +1,13 @@
 import http from 'http';
 import fs, { createReadStream, existsSync, readFileSync, promises as fsp } from 'fs';
 import { createRequire } from 'module';
-import { basename, dirname, extname, join, normalize, resolve } from 'path';
+import { basename, dirname, extname, join, normalize, resolve, sep as PATH_SEP } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn, execFile, execFileSync } from 'child_process';
 import os from 'os';
 import net from 'net';
 import { DatabaseSync } from 'node:sqlite';
+import * as adminAuth from './auth.js';
 const _require = createRequire(import.meta.url);
 function loadSharedModule(modulePath, globalName) {
   const loaded = _require(modulePath);
@@ -627,8 +628,18 @@ const state = {
   projects: null,
 };
 
+// Recent log lines, replayed to every new log-stream client so a browser opened later (a phone,
+// the next morning) still sees what happened. QR login images are left out: they are large and
+// only valid for the login that produced them.
+const LOG_HISTORY_MAX = 400;
+const logHistory = [];
 function sendLog(line) {
-  const payload = `data: ${JSON.stringify({ line, ts: new Date().toISOString() })}\n\n`;
+  const entry = { line, ts: new Date().toISOString() };
+  const payload = `data: ${JSON.stringify(entry)}\n\n`;
+  if (!/^\[zalo-connect:qr\]/.test(String(line))) {
+    logHistory.push(entry);
+    if (logHistory.length > LOG_HISTORY_MAX) logHistory.splice(0, logHistory.length - LOG_HISTORY_MAX);
+  }
   for (const res of logClients) res.write(payload);
   process.stdout.write(`${line}\n`);
 }
@@ -876,6 +887,10 @@ function run(cmd, args, opts = {}) {
 // `npm root -g` (~100ms) just to find a version string.
 function globalNodeModulesDirs() {
   const dirs = [];
+  // A per-user npm prefix (the VPS deploy runs as an unprivileged user with
+  // NPM_CONFIG_PREFIX=~/.npm-global) is where `npm i -g openclaw` lands - look there first.
+  const npmPrefix = process.env.NPM_CONFIG_PREFIX || process.env.npm_config_prefix;
+  if (npmPrefix) dirs.push(join(npmPrefix, 'lib', 'node_modules'), join(npmPrefix, 'node_modules'));
   const nodeDir = dirname(process.execPath);
   dirs.push(join(nodeDir, '..', 'lib', 'node_modules'));      // unix prefix layout
   dirs.push(join(nodeDir, 'node_modules'));                   // windows npm prefix
@@ -7161,30 +7176,173 @@ async function getFeatureFlags(projectDir, agentId = '') {
   return { flags, installed, versions, zaloBackend, locked };
 }
 
-async function serveStatic(req, res) {
-  const url = new URL(req.url, 'http://local');
-  let pathname = decodeURIComponent(url.pathname);
-  if (pathname === '/') pathname = '/index.html';
-  const file = resolve(WEB_DIR, pathname.slice(1));
-  if (!file.startsWith(WEB_DIR) || !existsSync(file)) return false;
-  const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png' };
-  res.writeHead(200, {
-    'content-type': types[extname(file)] || 'application/octet-stream',
+// Headers every page of the Setup UI carries: it must never be framed (clickjacking on the
+// admin console), sniffed, or leak its URL to the sites it links to.
+const SECURITY_HEADERS = {
+  'x-frame-options': 'DENY',
+  'x-content-type-options': 'nosniff',
+  'referrer-policy': 'same-origin',
+};
+const STATIC_TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.webp': 'image/webp' };
+
+function sendWebFile(res, file, status = 200) {
+  res.writeHead(status, {
+    ...SECURITY_HEADERS,
+    'content-type': STATIC_TYPES[extname(file)] || 'application/octet-stream',
     'cache-control': 'no-store, no-cache, must-revalidate',
     pragma: 'no-cache',
     expires: '0',
   });
   createReadStream(file).pipe(res);
+}
+
+async function serveStatic(req, res) {
+  const url = new URL(req.url, 'http://local');
+  let pathname;
+  try { pathname = decodeURIComponent(url.pathname); } catch { return false; }
+  if (pathname === '/') pathname = '/index.html';
+  const file = resolve(WEB_DIR, pathname.slice(1));
+  // `startsWith(WEB_DIR)` alone would also accept a sibling such as `<dist>/web-other/...`.
+  if (!file.startsWith(WEB_DIR + PATH_SEP) || !existsSync(file)) return false;
+  try { if (!fs.statSync(file).isFile()) return false; } catch { return false; }
+  sendWebFile(res, file);
   return true;
+}
+
+/** Plain explanation page for a request the auth layer refuses before any login is possible. */
+function sendNoPasswordPage(res) {
+  res.writeHead(503, { ...SECURITY_HEADERS, 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+  res.end(`<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="application-name" content="aivio-setup"><title>Chưa đặt mật khẩu quản trị</title><style>body{font-family:system-ui,sans-serif;max-width:560px;margin:12vh auto;padding:0 16px;line-height:1.6;color:#0f1233}code{background:#eef1f7;padding:2px 6px;border-radius:6px}</style></head><body><h1>Chưa đặt mật khẩu quản trị</h1><p>Giao diện quản lý bot chỉ mở cho truy cập từ xa sau khi có mật khẩu. Trên máy chủ, chạy lệnh sau rồi tải lại trang:</p><p><code>create-aivio-bot --set-password</code></p><p>Hoặc trong thư mục aivio-setup: <code>node dist/cli.js --set-password</code></p></body></html>`);
+}
+
+/**
+ * Login gate. Runs before every route. Returns true when it has already answered the request.
+ * Public: the login page and its logo, the login/status API. Everything else needs a session
+ * once a password exists, and is refused outright for proxied/remote requests until one does.
+ */
+async function handleAuth(req, res, url) {
+  const pathname = url.pathname;
+  const isApi = pathname.startsWith('/api/');
+  if (!adminAuth.originAllowed(req)) {
+    json(res, { error: 'Yêu cầu bị chặn: nguồn gửi (Origin) không khớp với trang quản lý.' }, 403);
+    return true;
+  }
+  if (pathname === '/api/auth/status' && req.method === 'GET') {
+    const decision = adminAuth.checkRequest(req);
+    json(res, { configured: adminAuth.isPasswordConfigured(), authenticated: decision.ok && !decision.open, required: !decision.open });
+    return true;
+  }
+  if (pathname === '/api/auth/login' && req.method === 'POST') {
+    const ip = adminAuth.clientIp(req);
+    const wait = adminAuth.loginBlockedFor(ip);
+    if (wait > 0) {
+      json(res, { error: `Sai mật khẩu quá nhiều lần. Thử lại sau ${Math.ceil(wait / 60000)} phút.` }, 429);
+      return true;
+    }
+    if (!adminAuth.isPasswordConfigured()) {
+      json(res, { error: 'Máy chủ chưa đặt mật khẩu quản trị. Chạy: create-aivio-bot --set-password' }, 503);
+      return true;
+    }
+    const body = await readJson(req).catch(() => ({}));
+    if (!adminAuth.verifyPassword(String(body.password || ''))) {
+      adminAuth.recordLoginFailure(ip);
+      sendLog(`[auth] Đăng nhập thất bại từ ${ip}.`);
+      json(res, { error: 'Mật khẩu không đúng.' }, 401);
+      return true;
+    }
+    adminAuth.clearLoginFailures(ip);
+    res.setHeader('set-cookie', adminAuth.sessionCookie(req, adminAuth.issueSessionToken()));
+    sendLog(`[auth] Đăng nhập thành công từ ${ip}.`);
+    json(res, { ok: true });
+    return true;
+  }
+  if (pathname === '/aivio-logo.svg' && req.method === 'GET') return false; // the login page shows it
+  const decision = adminAuth.checkRequest(req);
+  if (pathname === '/login') {
+    if (decision.ok) { res.writeHead(302, { location: '/' }); res.end(); return true; }
+    if (decision.reason === 'no-password') { sendNoPasswordPage(res); return true; }
+    sendWebFile(res, join(WEB_DIR, 'login.html'));
+    return true;
+  }
+  if (pathname === '/login.html') { res.writeHead(302, { location: '/login' }); res.end(); return true; }
+  if (!decision.ok) {
+    if (decision.reason === 'no-password') {
+      if (isApi) json(res, { error: 'Máy chủ chưa đặt mật khẩu quản trị.', auth: 'no-password' }, 503);
+      else sendNoPasswordPage(res);
+      return true;
+    }
+    if (isApi) { json(res, { error: 'Phiên đăng nhập đã hết. Đăng nhập lại để tiếp tục.', auth: 'login' }, 401); return true; }
+    const next = encodeURIComponent(url.pathname + url.search);
+    res.writeHead(302, { location: `/login?next=${next}` });
+    res.end();
+    return true;
+  }
+  if (pathname === '/api/auth/logout' && req.method === 'POST') {
+    res.setHeader('set-cookie', adminAuth.clearSessionCookie(req));
+    json(res, { ok: true });
+    return true;
+  }
+  if (pathname === '/api/auth/password' && req.method === 'POST') {
+    const body = await readJson(req).catch(() => ({}));
+    const next = String(body.newPassword || '');
+    if (adminAuth.isPasswordConfigured() && !adminAuth.verifyPassword(String(body.currentPassword || ''))) {
+      json(res, { error: 'Mật khẩu hiện tại không đúng.' }, 400);
+      return true;
+    }
+    try {
+      adminAuth.setPassword(next);
+    } catch (err) {
+      json(res, { error: err.message }, 400);
+      return true;
+    }
+    // A new password signs every device out, so hand this browser a fresh session.
+    res.setHeader('set-cookie', adminAuth.sessionCookie(req, adminAuth.issueSessionToken()));
+    sendLog('[auth] Đã đổi mật khẩu quản trị. Các thiết bị khác cần đăng nhập lại.');
+    json(res, { ok: true });
+    return true;
+  }
+  return false;
+}
+
+/** Real host numbers for the overview: CPU sampled over 400 ms, memory, disk of the project, uptime. */
+async function hostMetrics(projectDir) {
+  const snap = () => os.cpus().map((c) => ({ idle: c.times.idle, total: Object.values(c.times).reduce((a, b) => a + b, 0) }));
+  const a = snap();
+  await new Promise((r) => setTimeout(r, 400));
+  const b = snap();
+  let idle = 0, total = 0;
+  b.forEach((cpu, i) => { idle += cpu.idle - (a[i]?.idle || 0); total += cpu.total - (a[i]?.total || 0); });
+  const cpuPct = total > 0 ? Math.max(0, Math.min(100, Math.round((1 - idle / total) * 100))) : 0;
+  const memTotal = os.totalmem();
+  const memFree = os.freemem();
+  let disk = null;
+  try {
+    const target = projectDir && existsSync(projectDir) ? projectDir : os.homedir();
+    const st = fs.statfsSync(target);
+    disk = { total: st.blocks * st.bsize, free: st.bavail * st.bsize, path: target };
+  } catch {}
+  return {
+    cpu: { percent: cpuPct, cores: os.cpus().length, load1: os.loadavg()[0], model: os.cpus()[0]?.model || '' },
+    memory: { total: memTotal, used: memTotal - memFree, percent: Math.round(((memTotal - memFree) / memTotal) * 100) },
+    disk: disk ? { ...disk, used: disk.total - disk.free, percent: disk.total ? Math.round(((disk.total - disk.free) / disk.total) * 100) : 0 } : null,
+    uptimeSec: Math.round(os.uptime()),
+    hostname: os.hostname(),
+    platform: process.platform,
+    at: new Date().toISOString(),
+  };
 }
 
 async function handler(req, res, rootProjectDir) {
   try {
     const url = new URL(req.url, 'http://local');
+    if (await handleAuth(req, res, url)) return;
+    if (url.pathname === '/api/host/metrics' && req.method === 'GET') {
+      return json(res, await hostMetrics(state.projectDir));
+    }
     if (url.pathname === '/api/install/logs') {
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive' });
       logClients.add(res);
-      res.write(`data: ${JSON.stringify({ line: 'log stream connected', ts: new Date().toISOString() })}\n\n`);
+      res.write(`data: ${JSON.stringify({ history: logHistory })}\n\n`);
       req.on('close', () => logClients.delete(res));
       return;
     }
@@ -7212,6 +7370,9 @@ async function handler(req, res, rootProjectDir) {
         os: osChoice,
         platform: process.platform,
         arch: process.arch,
+        hostname: os.hostname(),
+        home: os.homedir(),
+        auth: { configured: adminAuth.isPasswordConfigured(), required: !adminAuth.checkRequest(req).open },
         recommendedMode: recommendedMode(osChoice),
         node: nodeStatus,
         npm: npmStatus,
@@ -7851,6 +8012,24 @@ async function windowsReservedPortNote(port) {
 }
 
 export async function startLocalInstaller({ host = '127.0.0.1', preferredPort = 51789, openBrowser = true, projectDir = process.cwd() } = {}) {
+  // AIVIO_ADMIN_PASSWORD lets an unattended install (deploy script, systemd) set the admin
+  // password once. It is hashed to ~/.aivio-setup/auth.json and dropped from the environment so
+  // the bot processes this server spawns never inherit it.
+  if (process.env.AIVIO_ADMIN_PASSWORD) {
+    const pw = process.env.AIVIO_ADMIN_PASSWORD;
+    delete process.env.AIVIO_ADMIN_PASSWORD;
+    try {
+      if (!adminAuth.isPasswordConfigured() || !adminAuth.verifyPassword(pw)) {
+        adminAuth.setPassword(pw);
+        console.log('🔐 Admin password set from AIVIO_ADMIN_PASSWORD.');
+      }
+    } catch (err) {
+      console.error(`⚠️  AIVIO_ADMIN_PASSWORD not applied: ${err.message}`);
+    }
+  }
+  if (host !== '127.0.0.1' && host !== 'localhost' && host !== '::1' && !adminAuth.isPasswordConfigured()) {
+    console.warn(`⚠️  Listening on ${host} without an admin password: remote requests will be refused until you run --set-password.`);
+  }
   const port = await findPort(host, preferredPort);
   if (port !== preferredPort && (await detectExistingSetupUi(host, preferredPort))) {
     // Another Setup UI already owns the preferred port (a systemd service, an earlier npx run…).

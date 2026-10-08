@@ -35,10 +35,46 @@ const __dirname = path.dirname(__filename);
       '  --port=<cổng>         Cổng Setup UI (mặc định 51789)',
       '  --project-dir=<đường> Thư mục project',
       '  --no-open             Không tự mở trình duyệt',
+      '  --set-password        Đặt/đổi mật khẩu quản trị rồi thoát (đọc AIVIO_ADMIN_PASSWORD hoặc hỏi)',
       '  -v, --version         In phiên bản rồi thoát',
       '  -h, --help            In trợ giúp này rồi thoát',
     ].join('\n'));
     process.exit(0);
+  }
+}
+
+// `--set-password`: hash the admin password into ~/.aivio-setup/auth.json and exit. Reads
+// AIVIO_ADMIN_PASSWORD, else one line from a pipe, else asks twice on the terminal without echo.
+if (process.argv.slice(2).includes('--set-password')) {
+  const { setPassword, validatePasswordStrength, authFilePath } = await import('../server/auth.js');
+  const readline = await import('node:readline');
+  const askHidden = (question) => new Promise((resolve) => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true });
+    rl._writeToOutput = (str) => { if (str.includes(question)) process.stdout.write(str); };
+    rl.question(question, (answer) => { rl.close(); process.stdout.write('\n'); resolve(answer); });
+  });
+  const readPipe = () => new Promise((resolve) => {
+    let data = '';
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', (chunk) => { data += chunk; });
+    process.stdin.on('end', () => resolve(data.split(/\r?\n/)[0] || ''));
+  });
+  try {
+    let password = process.env.AIVIO_ADMIN_PASSWORD || '';
+    if (!password && !process.stdin.isTTY) password = await readPipe();
+    if (!password) {
+      password = await askHidden('Mật khẩu quản trị mới: ');
+      const problem = validatePasswordStrength(password);
+      if (problem) throw new Error(problem);
+      const again = await askHidden('Nhập lại mật khẩu: ');
+      if (again !== password) throw new Error('Hai lần nhập không khớp.');
+    }
+    setPassword(password);
+    console.log(`✅ Đã lưu mật khẩu quản trị (${authFilePath()}). Mọi phiên đăng nhập cũ đã hết hiệu lực.`);
+    process.exit(0);
+  } catch (err) {
+    console.error(`❌ ${err.message}`);
+    process.exit(1);
   }
 }
 

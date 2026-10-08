@@ -7,7 +7,7 @@
  * and run `npm run build`.
  *
  * Layout (src → dist):
- *   src/cli/cli.src.js      → dist/cli.js            (import path rewritten, made executable)
+ *   src/cli/cli.src.js      → dist/cli.js            (../server/ imports rewritten, made executable)
  *   src/server/*.js         → dist/server/*.js
  *   src/setup/data/*.js     → dist/setup/data/*.js
  *   src/setup/shared/*.js   → dist/setup/shared/*.js
@@ -34,8 +34,8 @@ const SKIP = new Set([
   path.join('setup', 'jsconfig.json'),
 ]);
 const BOM = '﻿';
-const CLI_IMPORT_FROM = "import('../server/local-server.js')";
-const CLI_IMPORT_TO = "import('./server/local-server.js')";
+const CLI_IMPORT_FROM = "import('../server/";
+const CLI_IMPORT_TO = "import('./server/";
 
 function walk(dir, base = dir) {
   const out = [];
@@ -75,9 +75,10 @@ function build(outDir) {
   let cli = fs.readFileSync(cliSrc, 'utf8');
   if (cli.startsWith(BOM)) cli = cli.slice(1);
   if (!cli.includes(CLI_IMPORT_FROM)) {
-    throw new Error(`build: expected ${CLI_IMPORT_FROM} in src/cli/cli.src.js - update scripts/build.mjs if the CLI entry moved`);
+    throw new Error(`build: expected ${CLI_IMPORT_FROM}… in src/cli/cli.src.js - update scripts/build.mjs if the CLI entry moved`);
   }
-  cli = cli.replace(CLI_IMPORT_FROM, CLI_IMPORT_TO);
+  // src/cli/ sits one level below src/server/, dist/cli.js sits next to dist/server/.
+  cli = cli.split(CLI_IMPORT_FROM).join(CLI_IMPORT_TO);
   const cliOut = path.join(outDir, 'cli.js');
   fs.writeFileSync(cliOut, cli, 'utf8');
   fs.chmodSync(cliOut, 0o755);
