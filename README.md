@@ -2,97 +2,60 @@
 
 # 🎓 Học Viện Đào Tạo AI — Bot Setup
 
-### **Humanized AI for Business** — Tạo chatbot AI miễn phí, không cần lập trình
-
-*Chạy một lệnh → mở giao diện Web → bot hoạt động. Windows, macOS, Linux, VPS — tự động cài đặt.*
+### Build AI chatbots for Telegram, Zalo and Facebook Messenger on OpenClaw, powered by the HVDTAI Router
 
 <p align="center">
-  <a href="https://github.com/theanh828726/aivio-setup/releases"><img src="https://img.shields.io/badge/RELEASE-v1.0.0-0EA5E9?style=for-the-badge" alt="Version 1.0.0" /></a>
-  <a href="https://router.aivio.vn"><img src="https://img.shields.io/badge/HVDTAI_ROUTER-Online-22C55E?style=for-the-badge" alt="HVDTAI Router" /></a>
+  <img src="https://img.shields.io/badge/RELEASE-v1.1.0-0EA5E9?style=for-the-badge" alt="Version 1.1.0" />
+  <a href="https://router.aivio.vn"><img src="https://img.shields.io/badge/HVDTAI_ROUTER-router.aivio.vn-22C55E?style=for-the-badge" alt="HVDTAI Router" /></a>
   <img src="https://img.shields.io/badge/license-MIT-8B5CF6?style=for-the-badge" alt="MIT" />
 </p>
+
+[Tiếng Việt](README.vi.md) · **English**
+
+<img src="docs/dashboard.png" alt="Aivio Bot Setup dashboard" width="90%" />
 
 </div>
 
 ---
 
-## ✨ Tính năng
+Aivio Bot Setup is a local web UI that installs and configures [OpenClaw](https://openclaw.ai). Bots run inside the OpenClaw Gateway as an OS service, receive messages from chat channels and call AI models through the **HVDTAI Router** at `https://router.aivio.vn/v1` (combo `smart-route`).
 
-- 🤖 **Đa kênh** — Telegram, Zalo Bot API, Zalo Personal, Facebook Messenger
-- 🚀 **HVDTAI Router** — Tự động chọn AI tốt nhất (Gemini, Claude, GPT-4o) không giới hạn rate
-- 🧠 **Multi-Bot Team** — Chạy nhiều bot cùng lúc, workspace chia sẻ
-- 🔌 **Plugins** — Web Search, Browser Automation, Cron/Scheduler
-- 🆓 **Miễn phí** — Tích hợp các model AI miễn phí ngay từ đầu
-- 🔒 **Riêng tư** — Cấu hình lưu trên máy của anh/chị
+The full step-by-step guide is in Vietnamese: [README.vi.md](README.vi.md).
 
----
+## Quick start
 
-## 🗺️ Bắt đầu nhanh
-
-### Cách 1 — Khuyên dùng (không cần clone)
-
-Mở **Terminal / Command Prompt**, chạy:
+Requires Node.js 24 LTS and Git.
 
 ```bash
-npx create-aivio-bot
+npx --yes github:theanh828726/aivio-setup
 ```
 
-Wizard tự tải, khởi động server và mở giao diện tại `http://127.0.0.1:51789`.
-
-### Cách 2 — Clone thủ công (cho developer)
+or
 
 ```bash
 git clone https://github.com/theanh828726/aivio-setup.git
 cd aivio-setup
-npm install
 npm start
 ```
 
----
+The UI opens at `http://127.0.0.1:51789`.
 
-## 📋 Yêu cầu hệ thống
+1. On router.aivio.vn: connect providers, create a combo named exactly `smart-route`, create an API key under **Endpoints**.
+2. In the Setup UI: **Setup** → pick your OS → **Native** → create the project.
+3. **Dashboard** → **HVDTAI Router** card → **Set key** → paste the key.
+4. **Bot** → **Create bot** → pick a channel (Telegram, Zalo Bot API, personal Zalo, Facebook Messenger).
 
-| Phần mềm | Phiên bản |
-|---|---|
-| Node.js | 24 LTS trở lên |
-| Git | Mới nhất |
+## Environment variables
 
-> **Lưu ý:** Wizard sẽ tự kiểm tra và hướng dẫn cài đặt Node.js nếu chưa có.
+| Variable | Default | Effect |
+|---|---|---|
+| `AIVIO_ROUTER_MODE` | `remote` | Set to `local` to point new bots at the bundled 9Router (`127.0.0.1:20128`) instead of router.aivio.vn |
+| `AIVIO_SETUP_SPEC` | `github:theanh828726/aivio-setup` | Source used by the in-app **Update** button, e.g. `create-aivio-bot@latest` once published to npm |
 
----
+## Development
 
-## 🚀 HVDTAI Router
+Edit `src/`, then run `npm run build` to regenerate the committed `dist/`. `npm run check:dist` fails when `dist/` is out of date.
 
-Bot được kết nối với **[HVDTAI Router](https://router.aivio.vn)** — dịch vụ AI proxy của Học Viện Đào Tạo AI.
+## Credits
 
-Router tự động luân chuyển giữa:
-- ⚡ **Google Gemini 2.5 Flash/Pro** (miễn phí)
-- 🦄 **Anthropic Claude Sonnet/Opus**
-- 🧠 **OpenAI GPT-4o**
-
-Không cần tự quản lý API key. Đăng ký tại: **[router.aivio.vn](https://router.aivio.vn)**
-
----
-
-## 📱 Kênh hỗ trợ
-
-| Kênh | Trạng thái |
-|---|---|
-| Telegram | ✅ Sẵn sàng |
-| Zalo OA (Bot API) | ✅ Sẵn sàng |
-| Zalo Personal | ✅ Sẵn sàng |
-| Facebook Messenger | ✅ Sẵn sàng |
-| Discord | 🔜 Sắp có |
-| Lark/Feishu | 🔜 Sắp có |
-
----
-
-## 🙌 Tác giả
-
-Phát triển bởi **[Học Viện Đào Tạo AI](https://hocvienai.com)** — Humanized AI for Business.
-
-Dựa trên nền tảng [OpenClaw](https://github.com/tuanminhhole/openclaw-setup) (MIT License).
-
----
-
-MIT License © 2026 Học Viện Đào Tạo AI
+Built by [Học Viện Đào Tạo AI](https://hocvienai.com). Based on [OpenClaw Setup](https://github.com/tuanminhhole/openclaw-setup) by tuanminhhole (MIT); its changelog is kept in [docs/upstream](docs/upstream). Released under the [MIT License](LICENSE).
