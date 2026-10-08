@@ -1,7 +1,7 @@
 {
   "name": "create-aivio-bot",
-  "version": "1.0.0",
-  "description": "Aivio Bot Setup — Tạo chatbot AI miễn phí cho Telegram, Zalo, Facebook",
+  "version": "1.1.0",
+  "description": "Aivio Bot Setup — Tạo chatbot AI cho Telegram, Zalo, Facebook Messenger trên OpenClaw, chạy qua HVDTAI Router",
   "main": "dist/cli.js",
   "bin": {
     "create-aivio-bot": "./dist/cli.js"
@@ -10,29 +10,35 @@
     "dist"
   ],
   "scripts": {
-    "start": "node dist/cli.js"
+    "start": "node dist/cli.js",
+    "build": "node scripts/build.mjs",
+    "check:dist": "node scripts/build.mjs --check"
   },
   "keywords": [
     "aivio",
+    "hocvienai",
+    "openclaw",
     "chatbot",
     "cli",
     "bot",
     "zalo",
     "telegram",
+    "messenger",
     "ai",
     "vietnam"
   ],
-  "author": "aivio",
+  "author": "Học Viện Đào Tạo AI (https://hocvienai.com)",
   "license": "MIT",
-  "dependencies": {
-    "@inquirer/prompts": "^4.3.1",
-    "chalk": "^5.3.0",
-    "fs-extra": "^11.2.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theanh828726/aivio-setup.git"
   },
-  "bundleDependencies": [
-    "@inquirer/prompts",
-    "chalk",
-    "fs-extra"
-  ],
+  "homepage": "https://github.com/theanh828726/aivio-setup#readme",
+  "bugs": {
+    "url": "https://github.com/theanh828726/aivio-setup/issues"
+  },
+  "engines": {
+    "node": ">=24"
+  },
   "type": "module"
 }

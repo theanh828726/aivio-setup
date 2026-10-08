@@ -1,4 +1,4 @@
-﻿import http from 'http';
+import http from 'http';
 import fs, { createReadStream, existsSync, readFileSync, promises as fsp } from 'fs';
 import { createRequire } from 'module';
 import { basename, dirname, extname, join, normalize, resolve } from 'path';
@@ -17,7 +17,7 @@ const { buildWorkspaceFileMap, buildCronjobSkillMd, buildInfographicGeneratorSki
 const { buildOpenclawJson, buildEnvFileContent, buildExecApprovalsJson, buildZaloConnectChannelConfig } = loadSharedModule('../setup/shared/bot-config-gen.js', '__openclawBotConfig');
 const { buildDockerArtifacts, contextDefaultsScript } = loadSharedModule('../setup/shared/docker-gen.js', '__openclawDockerGen');
 const { buildWindowsLaunchers, WINDOWS_DESKTOP_LAUNCHERS } = loadSharedModule('../setup/shared/windows-launcher-gen.js', '__openclawWindowsLaunchers');
-const { OPENCLAW_NPM_SPEC, NINE_ROUTER_NPM_SPEC, ZALO_CHANNEL_ID, ZALO_PLUGIN_ID, ZALO_CONNECT_VERSION, ZALO_CONNECT_PLUGIN_SPEC, build9RouterProviderConfig, get9RouterBaseUrl } = loadSharedModule('../setup/shared/common-gen.js', '__openclawCommon');
+const { OPENCLAW_NPM_SPEC, NINE_ROUTER_NPM_SPEC, ZALO_CHANNEL_ID, ZALO_PLUGIN_ID, ZALO_CONNECT_VERSION, ZALO_CONNECT_PLUGIN_SPEC, build9RouterProviderConfig, get9RouterBaseUrl, is9RouterBaseUrlLocal, NINE_ROUTER_API_BASE_URL } = loadSharedModule('../setup/shared/common-gen.js', '__openclawCommon');
 const dataExport = loadSharedModule('../setup/data/index.js', '__openclawData');
 
 // Chrome 136+ ignores --remote-debugging-port when --user-data-dir is the default profile
@@ -560,6 +560,15 @@ Do not call \`search-tool.js\`; browser-automation does not own search. Use \`we
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WEB_DIR = resolve(__dirname, '../web');
 const SETUP_VERSION = (() => { try { return JSON.parse(fs.readFileSync(resolve(__dirname, '../../package.json'), 'utf8')).version || '0.0.0'; } catch { return '0.0.0'; } })();
+// Where this installer itself comes from. Updates, the version check, relaunches and the
+// generated Windows launchers all read these, so a fork only has to change them here.
+// AIVIO_SETUP_SPEC overrides the install source (e.g. `create-aivio-bot@latest` once the
+// package is on npm, or a branch: `github:theanh828726/aivio-setup#dev`).
+const SETUP_REPO = 'theanh828726/aivio-setup';
+const SETUP_REPO_BRANCH = 'master';
+const SETUP_PACKAGE_NAME = 'create-aivio-bot';
+const SETUP_UPDATE_SPEC = process.env.AIVIO_SETUP_SPEC || `github:${SETUP_REPO}`;
+const SETUP_CACHE_DIR = '.aivio-setup';
 let latestSetupVersionCache = SETUP_VERSION;
 let isFetchingLatestSetup = false;
 
@@ -567,10 +576,10 @@ async function fetchLatestSetupVersionBg() {
   if (isFetchingLatestSetup) return;
   isFetchingLatestSetup = true;
   try {
-    // Distribution is GitHub (not npm) - read the version straight from main so the
-    // "latest" reflects `npx github:…`, not the stale last-published npm release.
+    // Distribution is GitHub (not npm) - read the version straight from the default branch so
+    // the "latest" reflects `npx github:…`, not a stale npm release.
     const resp = await fetch(
-      'https://raw.githubusercontent.com/tuanminhhole/openclaw-setup/main/package.json',
+      `https://raw.githubusercontent.com/${SETUP_REPO}/${SETUP_REPO_BRANCH}/package.json`,
       { signal: AbortSignal.timeout(4000), headers: { 'Cache-Control': 'no-cache' } },
     );
     if (resp.ok) {
@@ -586,7 +595,10 @@ async function fetchLatestSetupVersionBg() {
 }
 fetchLatestSetupVersionBg().catch(() => {});
 
-const DEFAULT_PROJECT_NAME = 'openclaw-setup';
+const DEFAULT_PROJECT_NAME = 'aivio-bot';
+// Folder name earlier builds (upstream OpenClaw Setup) created; still searched so existing
+// projects are found after an upgrade.
+const LEGACY_PROJECT_NAME = 'openclaw-setup';
 const STATE_FILE = '.openclaw-setup-state.json';
 const DEFAULT_MODEL = 'smart-route';
 const logClients = new Set();
@@ -975,7 +987,7 @@ async function resolveProjectRuntimeVersions(projectDir, mode = state.mode || 'd
     const routerContainer = parseComposeServiceContainerName(compose, '9router') || '9router';
     const [openclawOut, routerOut, nodeOut] = await Promise.all([
       runCapture('docker', ['exec', botContainer, 'node', '-e', "const fs=require('fs');const p='/usr/local/lib/node_modules/openclaw/package.json';process.stdout.write(fs.existsSync(p)?String(JSON.parse(fs.readFileSync(p,'utf8')).version||''):'')"], { shell: false }),
-      runCapture('docker', ['exec', routerContainer, 'node', '-e', "fetch('http://router.aivio.vn/api/version').then(async r=>{const d=await r.json().catch(()=>({}));process.stdout.write(String(d.currentVersion||''));}).catch(()=>process.stdout.write(''))"], { shell: false }),
+      runCapture('docker', ['exec', routerContainer, 'node', '-e', "fetch('http://localhost:20128/api/version').then(async r=>{const d=await r.json().catch(()=>({}));process.stdout.write(String(d.currentVersion||''));}).catch(()=>process.stdout.write(''))"], { shell: false }),
       runCapture('docker', ['exec', botContainer, 'node', '--version'], { shell: false }),
     ]);
     result = {
@@ -1242,7 +1254,10 @@ async function detectRuntime(projectDir) {
     gatewayPort,
     routerPort,
     gatewayUrl: `http://127.0.0.1:${gatewayPort}`,
-    routerUrl: `http://127.0.0.1:${routerPort}`,
+    // A hosted router (router.aivio.vn) is opened and probed at its own origin; the bundled
+    // 9Router keeps the loopback URL.
+    routerUrl: projectUsesRemoteRouter(cfg) ? routerOrigin(providerBase) : `http://127.0.0.1:${routerPort}`,
+    routerRemote: projectUsesRemoteRouter(cfg),
     // Ask projectDeployMode, don't re-derive from the compose file: a project migrated to native
     // KEEPS its docker/ folder on purpose (that is the way back), so "compose file exists" stops
     // meaning "runs on docker" the moment migration lands. Getting this wrong made the dashboard
@@ -1289,6 +1304,7 @@ async function syncRuntimeState(projectDir, { full = false } = {}) {
   state.routerPort = rt.routerPort;
   state.gatewayUrl = rt.gatewayUrl;
   state.routerUrl = rt.routerUrl;
+  state.routerRemote = !!rt.routerRemote;
   state.mode = state.mode || rt.mode;
   state.syncSource = rt.syncSource || 'config';
   state.installed = true;
@@ -1742,9 +1758,19 @@ api.createApiKey(${JSON.stringify(keyName)}).then((r) => {
   }
 }
 
+/** True when the project's 9router provider points at a hosted router (router.aivio.vn), not this machine. */
+function projectUsesRemoteRouter(cfg = null) {
+  const base = String(cfg?.models?.providers?.['9router']?.baseUrl || '').trim();
+  return !!base && !(is9RouterBaseUrlLocal ? is9RouterBaseUrlLocal(base) : /localhost|127\.0\.0\.1|9router/i.test(base));
+}
+
 async function resolveProject9RouterApiKey(projectDir, cfg = null) {
   const configApiKey = String(cfg?.models?.providers?.['9router']?.apiKey || '').trim();
   if (configApiKey && configApiKey !== 'sk-no-key') return configApiKey;
+  // A hosted router only accepts keys it issued (router.aivio.vn → Endpoints). Borrowing the
+  // bundled local 9Router's key would put a key the remote rejects into openclaw.json and every
+  // turn would 401, so for a remote base the operator's own key is the only source.
+  if (projectUsesRemoteRouter(cfg)) return '';
   const compose = await readComposeText(projectDir);
   if (compose) {
     const containerName = parseComposeServiceContainerName(compose, '9router') || '9router';
@@ -1867,8 +1893,17 @@ async function updateBotCredentials(projectDir, body = {}) {
     cfg.models = cfg.models || { mode: 'merge', providers: {} };
     cfg.models.providers = cfg.models.providers || {};
     cfg.models.providers['9router'] = cfg.models.providers['9router'] || (build9RouterProviderConfig ? build9RouterProviderConfig(get9RouterBaseUrl ? get9RouterBaseUrl(state.mode || 'docker', state.routerPort) : `http://9router:${state.routerPort || 20128}/v1`) : {});
+    const previousKey = String(cfg.models.providers['9router'].apiKey || '').trim();
     cfg.models.providers['9router'].apiKey = nineRouterApiKey;
     await appendEnvValue(projectDir, 'NINE_ROUTER_API_KEY', nineRouterApiKey);
+    await fsp.writeFile(found.cfgPath, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+    // OpenClaw freezes the first key it saw (usually the `sk-no-key` placeholder) into an auth
+    // profile that outranks openclaw.json, so a new key alone changes nothing and every turn
+    // keeps failing with 401. Drop that profile whenever the key really changed.
+    if (nineRouterApiKey && nineRouterApiKey !== previousKey) {
+      await drop9RouterAuthProfile(projectDir, cfg, { force: true }).catch(() => {});
+    }
+    return readBotCredentials(projectDir);
   }
   await fsp.writeFile(found.cfgPath, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
   return readBotCredentials(projectDir);
@@ -2131,6 +2166,30 @@ async function deleteBotInProject(projectDir, agentId) {
   return { ok: true, agentId };
 }
 
+/** `https://router.aivio.vn/v1` → `https://router.aivio.vn`. */
+function routerOrigin(baseUrl = '') {
+  try { return new URL(baseUrl).origin; } catch { return String(baseUrl || '').replace(/\/v1\/?$/, ''); }
+}
+
+const remoteRouterProbe = { url: '', at: 0, status: 'unknown' };
+/**
+ * Reachability of a hosted router. Any HTTP answer from /v1/models (401 included - no key is
+ * sent) means the router is up; only a network failure or a 5xx counts as offline. Cached for
+ * 30s so the dashboard's polling does not hammer the router.
+ */
+async function remoteRouterStatus(origin) {
+  if (!origin) return 'unknown';
+  const now = Date.now();
+  if (remoteRouterProbe.url === origin && now - remoteRouterProbe.at < 30000) return remoteRouterProbe.status;
+  let status = 'offline';
+  try {
+    const res = await fetch(`${origin}/v1/models`, { signal: AbortSignal.timeout(4000) });
+    status = res.status < 500 ? 'online' : 'offline';
+  } catch {}
+  Object.assign(remoteRouterProbe, { url: origin, at: now, status });
+  return status;
+}
+
 function portStatus(port) {
   return new Promise((resolve) => {
     const sock = net.createConnection({ host: '127.0.0.1', port, timeout: 650 });
@@ -2163,7 +2222,7 @@ async function buildBotStatus() {
   if (state.projectDir) await syncRuntimeState(state.projectDir).catch(() => {});
   const [gatewayStatus, routerStatus, bots, runtimeVersions] = await Promise.all([
     portStatus(state.gatewayPort || 18789).catch(() => state.installed ? 'unknown' : 'offline'),
-    portStatus(state.routerPort || 20128).catch(() => state.installed ? 'unknown' : 'offline'),
+    (state.routerRemote ? remoteRouterStatus(state.routerUrl) : portStatus(state.routerPort || 20128)).catch(() => state.installed ? 'unknown' : 'offline'),
     listConfiguredBots(state.projectDir).catch(() => []),
     resolveProjectRuntimeVersions(state.projectDir, state.mode).catch(() => ({ openclaw: '', nineRouter: '', node: process.version || '' })),
   ]);
@@ -2190,7 +2249,7 @@ async function buildBotStatus() {
     }
   }
 
-  const cap = (s) => String(s).toLowerCase() === 'openai' ? 'OpenAI' : String(s).toLowerCase() === '9router' ? '9Router' : s;
+  const cap = (s) => String(s).toLowerCase() === 'openai' ? 'OpenAI' : String(s).toLowerCase() === '9router' ? (state.routerRemote ? 'HVDTAI Router' : '9Router') : s;
   activeProvider = cap(activeProvider);
 
   // Resolved per project, not from the installer-wide state.mode: the operator can switch between
@@ -6034,6 +6093,7 @@ async function findLatestProject(rootProjectDir) {
     process.env.OPENCLAW_HOME ? dirname(process.env.OPENCLAW_HOME) : '',
     rootProjectDir,
     join(rootProjectDir, DEFAULT_PROJECT_NAME),
+    join(rootProjectDir, LEGACY_PROJECT_NAME),
     dirname(rootProjectDir),
     realHome,
     join(realHome, 'Documents'),
@@ -7337,26 +7397,22 @@ async function handler(req, res, rootProjectDir) {
     if (url.pathname === '/api/setup/update' && req.method === 'POST') {
       const installerDir = resolve(__dirname, '../..');
       const isGit = existsSync(resolve(installerDir, '.git'));
-      // npm -g install: the new-host template installs create-openclaw-bot globally and runs
-      // the UI as a systemd user service. Without its own branch this fell into the "github"
-      // relaunch path, which only restarted the OLD version (measured on vps_c-thu, 02/09/2026).
-      // npx installs also live under node_modules, so exclude the _npx cache explicitly.
+      // npm -g install: the installer can be installed globally and run as a systemd user
+      // service. Without its own branch this fell into the "github" relaunch path, which only
+      // restarted the OLD version. npx installs also live under node_modules, so exclude the
+      // _npx cache explicitly.
       const isNpx = /[\\/]_npx[\\/]/.test(installerDir);
-      const isGlobalNpm = !isGit && !isNpx && /[\\/]node_modules[\\/]create-openclaw-bot[\\/]?$/.test(installerDir);
+      const globalPkgRe = new RegExp(`[\\\\/]node_modules[\\\\/]${SETUP_PACKAGE_NAME}[\\\\/]?$`);
+      const isGlobalNpm = !isGit && !isNpx && globalPkgRe.test(installerDir);
       const mode = isGit ? 'git' : (isGlobalNpm ? 'npm-global' : 'github');
       setImmediate(async () => {
         try {
           if (isGit) {
-            // Clone/dev install: pull the latest (committed dist comes with it).
+            // Clone/dev install: pull the latest. dist/ is committed (built by scripts/build.mjs),
+            // so a pull is all a clone needs - no rebuild on the operator's machine.
             sendLog('[update-setup] Git install detected - pulling latest from GitHub…');
             await run('git', ['pull', '--ff-only'], { cwd: installerDir });
             await run('npm', ['install', '--omit=dev', '--no-audit', '--no-fund'], { cwd: installerDir });
-            // docs_dev (build tooling) is gitignored, so clones can't rebuild - and
-            // don't need to: dist/ is committed. Only rebuild when tooling is present.
-            if (existsSync(resolve(installerDir, 'docs_dev'))) {
-              await run('npm', ['run', 'build'], { cwd: installerDir }).catch((e) =>
-                sendLog(`[update-setup] build skipped: ${e.message}`));
-            }
           } else if (isGlobalNpm) {
             // Pull the latest from npm in place, then exit - the service manager (or the
             // respawn path for a hand-run UI) relaunches onto the freshly installed dist.
@@ -7365,20 +7421,21 @@ async function handler(req, res, rootProjectDir) {
             // vps_thuy-le 07/09 - bản đang chạy ở `/usr/lib/node_modules` (5.16.5) mà `npm i -g`
             // lại cài vào `/root/.nvm/versions/node/v24.20.0/lib/node_modules` (5.16.7). Log báo
             // "updated successfully", service restart, mà giao diện vẫn bản cũ - không ai hiểu nổi.
-            // installerDir = <prefix>/lib/node_modules/create-openclaw-bot ⇒ lùi 3 cấp là prefix.
+            // installerDir = <prefix>/lib/node_modules/<package> ⇒ lùi 3 cấp là prefix.
             const npmPrefix = resolve(installerDir, '..', '..', '..');
-            const prefixArgs = /[\\/]lib[\\/]node_modules[\\/]create-openclaw-bot[\\/]?$/.test(installerDir)
+            const prefixRe = new RegExp(`[\\\\/]lib[\\\\/]node_modules[\\\\/]${SETUP_PACKAGE_NAME}[\\\\/]?$`);
+            const prefixArgs = prefixRe.test(installerDir)
               ? ['--prefix', npmPrefix]
               : [];
-            sendLog(`[update-setup] Global npm install detected - npm i -g create-openclaw-bot@latest${prefixArgs.length ? ` (prefix ${npmPrefix})` : ''}…`);
-            await run('npm', ['i', '-g', 'create-openclaw-bot@latest', '--no-audit', '--no-fund', ...prefixArgs], { cwd: installerDir });
+            sendLog(`[update-setup] Global npm install detected - npm i -g ${SETUP_UPDATE_SPEC}${prefixArgs.length ? ` (prefix ${npmPrefix})` : ''}…`);
+            await run('npm', ['i', '-g', SETUP_UPDATE_SPEC, '--no-audit', '--no-fund', ...prefixArgs], { cwd: installerDir });
           } else {
             // An npx install: warm the package cache HERE, while the UI is still up and the
             // browser is still watching the log. Leaving it to the relaunch meant the download
             // happened with no server running and nothing to report progress to, so a slow link
             // looked exactly like a crash.
-            sendLog('[update-setup] Tải bản mới từ npm…');
-            await run('npm', ['cache', 'add', 'create-openclaw-bot@latest'], { cwd: installerDir })
+            sendLog(`[update-setup] Tải bản mới (${SETUP_UPDATE_SPEC})…`);
+            await run('npm', ['cache', 'add', SETUP_UPDATE_SPEC], { cwd: installerDir })
               .catch((e) => sendLog(`[update-setup] npm cache add: ${e.message}`));
           }
           restartInstaller();
@@ -7614,12 +7671,11 @@ function restartInstaller() {
         spawnArgs = winLauncher;
         opts = { detached: true, stdio: relaunchStdio, shell: false, windowsHide: true };
       } else if (isNpx) {
-        // An npx install came from npm, so update from npm. Pulling `github:…` instead rebuilt the
-        // repo from source on every update: minutes of clone plus install, long past the point the
-        // browser gives up reconnecting, and a different artifact from the one they installed.
+        // Relaunch from the same source the update just warmed into the npm cache
+        // (SETUP_UPDATE_SPEC), so the browser reconnects to the new version.
         const win = process.platform === 'win32';
         bin = win ? 'npx.cmd' : 'npx';
-        spawnArgs = ['--yes', 'create-openclaw-bot@latest', ...uiArgs];
+        spawnArgs = ['--yes', SETUP_UPDATE_SPEC, ...uiArgs];
         opts = { detached: true, stdio: relaunchStdio, shell: win };
       } else {
         // Local clone / file install - re-run this entry (git pull already updated it).
@@ -7645,7 +7701,7 @@ function restartInstaller() {
 }
 
 /**
- * One-time convenience: drop a short `openclaw-ui` command into the user's shell
+ * One-time convenience: drop a short `aivio-ui` command into the user's shell
  * profile so reopening the wizard later is a single word - no long manual setup.
  * OS/shell-aware, idempotent, and fully best-effort (never throws, never blocks
  * startup). Only runs for npx-installed users (the cache dir must exist).
@@ -7653,10 +7709,10 @@ function restartInstaller() {
 function ensureReopenShortcut() {
   try {
     const home = os.homedir();
-    const cliPath = join(home, '.openclaw-setup', 'node_modules', 'create-openclaw-bot', 'dist', 'cli.js');
+    const cliPath = join(home, SETUP_CACHE_DIR, 'node_modules', SETUP_PACKAGE_NAME, 'dist', 'cli.js');
     if (!existsSync(cliPath)) return; // running from a cloned repo (dev) - nothing to shortcut
-    const MARK = '# >>> openclaw-ui (auto-added by OpenClaw Setup) >>>';
-    const END = '# <<< openclaw-ui <<<';
+    const MARK = '# >>> aivio-ui (auto-added by Aivio Setup) >>>';
+    const END = '# <<< aivio-ui <<<';
 
     if (process.platform === 'win32') {
       const candidates = [
@@ -7665,20 +7721,20 @@ function ensureReopenShortcut() {
       ];
       const profile = candidates.find((p) => existsSync(dirname(p))) || candidates[1];
       const content = existsSync(profile) ? fs.readFileSync(profile, 'utf8') : '';
-      if (content.includes(MARK)) { console.log("💡 Reopen anytime with:  openclaw-ui  (in a new PowerShell)"); return; }
-      const block = `\n${MARK}\nfunction openclaw-ui { $env:OPENCLAW_SETUP_WIZARD="true"; node "${cliPath.replace(/\\/g, '\\\\')}" }\n${END}\n`;
+      if (content.includes(MARK)) { console.log("💡 Reopen anytime with:  aivio-ui  (in a new PowerShell)"); return; }
+      const block = `\n${MARK}\nfunction aivio-ui { $env:OPENCLAW_SETUP_WIZARD="true"; node "${cliPath.replace(/\\/g, '\\\\')}" }\n${END}\n`;
       fs.mkdirSync(dirname(profile), { recursive: true });
       fs.appendFileSync(profile, block, 'utf8');
-      console.log("✓ Shortcut installed - open a NEW PowerShell and type:  openclaw-ui");
+      console.log("✓ Shortcut installed - open a NEW PowerShell and type:  aivio-ui");
     } else {
       const shell = process.env.SHELL || '';
       const rcName = shell.includes('zsh') ? '.zshrc' : shell.includes('bash') ? '.bashrc' : '.profile';
       const rc = join(home, rcName);
       const content = existsSync(rc) ? fs.readFileSync(rc, 'utf8') : '';
-      if (content.includes(MARK)) { console.log("💡 Reopen anytime with:  openclaw-ui"); return; }
-      const block = `\n${MARK}\nalias openclaw-ui='OPENCLAW_SETUP_WIZARD=true node "${cliPath}"'\n${END}\n`;
+      if (content.includes(MARK)) { console.log("💡 Reopen anytime with:  aivio-ui"); return; }
+      const block = `\n${MARK}\nalias aivio-ui='OPENCLAW_SETUP_WIZARD=true node "${cliPath}"'\n${END}\n`;
       fs.appendFileSync(rc, block, 'utf8');
-      console.log(`✓ Shortcut added to ~/${rcName} - open a NEW terminal (or run 'source ~/${rcName}') and type:  openclaw-ui`);
+      console.log(`✓ Shortcut added to ~/${rcName} - open a NEW terminal (or run 'source ~/${rcName}') and type:  aivio-ui`);
     }
   } catch { /* best-effort: a shortcut failure must never break startup */ }
 }
@@ -7746,13 +7802,15 @@ async function printRemoteAccessHint(uiPort) {
   console.log('');
 }
 
-/** True when whatever answers on host:port already looks like an OpenClaw Setup UI. */
+/** True when whatever answers on host:port already looks like this Setup UI. */
 async function detectExistingSetupUi(host, port) {
   try {
     const res = await fetch(`http://${host}:${port}/`, { signal: AbortSignal.timeout(2500) });
     if (!res.ok) return false;
     const body = (await res.text()).slice(0, 65536);
-    return /openclaw/i.test(body);
+    // index.html carries <meta name="application-name" content="aivio-setup">; the bare
+    // "openclaw" match keeps recognising an older (pre-rebrand) instance on the same port.
+    return /aivio-setup|openclaw/i.test(body);
   } catch (_) {
     return false;
   }
@@ -7798,14 +7856,14 @@ export async function startLocalInstaller({ host = '127.0.0.1', preferredPort = 
     // Another Setup UI already owns the preferred port (a systemd service, an earlier npx run…).
     // Hopping to :51790 here is exactly how operators end up with SSH tunnels and printed hints
     // pointing at a port nothing serves - so reuse the running instance instead of starting a
-    // second one, and keep this process alive so an `ssh -L … "npx create-openclaw-bot"`
+    // second one, and keep this process alive so an `ssh -L … "npx github:theanh828726/aivio-setup"`
     // one-liner still holds the tunnel open. If the other instance ever goes away, take the
     // port over so the URL keeps working without the operator re-running anything.
     const url = `http://${host}:${preferredPort}`;
     activeUiHost = host;
     activeUiPort = preferredPort;
     activeUiProjectDir = projectDir;
-    console.log(`OpenClaw Setup UI is already running: ${url}`);
+    console.log(`Aivio Setup UI is already running: ${url}`);
     console.log('Reusing the running instance - nothing new was started. Keep this window open if it holds your SSH tunnel.');
     ensureReopenShortcut();
     if (openBrowser) openUrl(url);
@@ -7833,7 +7891,7 @@ export async function startLocalInstaller({ host = '127.0.0.1', preferredPort = 
   activeServerInstance = server;
   await new Promise((resolve) => server.listen(port, host, resolve));
   const url = `http://${host}:${port}`;
-  console.log(`OpenClaw Setup UI: ${url}`);
+  console.log(`Aivio Setup UI: ${url}`);
   ensureReopenShortcut();
   if (openBrowser) openUrl(url);
   printRemoteAccessHint(port).catch(() => {});

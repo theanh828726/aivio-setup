@@ -1,9 +1,9 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 /* eslint-disable no-undef, no-unused-vars */
 /**
- * @fileoverview Part of the OpenClaw Setup Wizard IIFE bundle.
+ * @fileoverview Part of the Aivio Bot Setup wizard IIFE bundle.
  * This file is concatenated (not imported) - globals are shared via setup.js IIFE scope.
- * Do NOT add import/export statements. Edit, then run: node build.mjs
+ * Do NOT add import/export statements. Edit, then run: npm run build
  *
  * @global {object}  state       - Wizard UI state
  * @global {object}  PROVIDERS   - AI provider registry

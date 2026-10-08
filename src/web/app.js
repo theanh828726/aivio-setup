@@ -1,5 +1,5 @@
-﻿const $ = (sel) => document.querySelector(sel);
-const state = { tab: 'dashboard', system: null, install: null, files: [], catalog: { skills: [], plugins: [] }, logs: [], zaloLoginOpen: false, zaloLoginLines: [], zaloQrDataUrl: '', lang: localStorage.getItem('aivio-lang') || 'vi', theme: localStorage.getItem('aivio-theme') || 'dark', tz: localStorage.getItem('aivio-tz') || 'Asia/Ho_Chi_Minh', navCollapsed: localStorage.getItem('aivio-nav')==='1', os: null, mode: null, donateOpen: false, botModalOpen: false, botEditId: '', installModalOpen: false, fbPluginModalOpen: false, installTab: 'native', installDraft: null, pathModal: null, confirmModal: null, botChannel: 'telegram', botPane: 'list', activeBotId: '', selectedFile: '', botMessage: '', projectConnectMessage: '', pendingProjectDir: '', selectedProjectDir: '', featureFlags: {}, featureInstalled: {}, featureLoading: {}, featureLocked: {}, zaloBackend: '', zaloHealth: null, openDirs: {} };
+const $ = (sel) => document.querySelector(sel);
+const state = { tab: 'dashboard', system: null, install: null, files: [], catalog: { skills: [], plugins: [] }, logs: [], zaloLoginOpen: false, zaloLoginLines: [], zaloQrDataUrl: '', lang: localStorage.getItem('aivio-lang') || 'vi', theme: localStorage.getItem('aivio-theme') || 'dark', tz: localStorage.getItem('aivio-tz') || 'Asia/Ho_Chi_Minh', navCollapsed: localStorage.getItem('aivio-nav')==='1', os: null, mode: null, botModalOpen: false, botEditId: '', installModalOpen: false, fbPluginModalOpen: false, installTab: 'native', installDraft: null, pathModal: null, confirmModal: null, botChannel: 'telegram', botPane: 'list', activeBotId: '', selectedFile: '', botMessage: '', projectConnectMessage: '', pendingProjectDir: '', selectedProjectDir: '', featureFlags: {}, featureInstalled: {}, featureLoading: {}, featureLocked: {}, zaloBackend: '', zaloHealth: null, openDirs: {} };
 const SVG_CDN = 'https://cdn.jsdelivr.net/gh/glincker/thesvg@main/public/icons';
 const OS_OPTIONS = [
   { id: 'win', title: 'Windows', subtitle: 'Auto-detected desktop', icon: `${SVG_CDN}/windows/default.svg`, badge: 'Desktop' },
@@ -150,14 +150,6 @@ function sidebarExtras() {
     </div>
   </div>`;
 }
-function donateModal() {
-  if (!state.donateOpen) return '';
-  return `<div class="modal-backdrop" data-donate="close"><section class="donate-modal" role="dialog" aria-modal="true" aria-label="Donate" onclick="event.stopPropagation()">
-    <button class="modal-x" data-donate="close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <div class="donate-head"><span aria-hidden="true">&#10084;</span><div><p>${t('\u1ee6ng h\u1ed9 OpenClaw', 'Support OpenClaw')}</p><h2>Donate</h2><small>${t('\u0110\u00f3ng g\u00f3p c\u1ee7a b\u1ea1n gi\u00fap duy tr\u00ec h\u1ea1 t\u1ea7ng, s\u1eeda l\u1ed7i v\u00e0 c\u1ea3i ti\u1ebfn OpenClaw m\u1ed7i ng\u00e0y.', 'Your support keeps infrastructure running, fixes bugs, and improves OpenClaw every day.')}</small></div></div>
-    <div class="donate-grid"><article><div class="qr-frame"><img src="/bvvbank.jpg" alt="BVBank transfer info"></div><b>BVBank</b></article><article><div class="qr-frame"><img src="/momo.jpg" alt="Momo transfer info"></div><b>Momo</b></article></div>
-  </section></div>`;
-}
 function fbPluginModal() {
   if (!state.fbPluginModalOpen) return '';
   const socials = [
@@ -195,8 +187,8 @@ function pathModal() {
   return `<div class="modal-backdrop confirm-backdrop" data-path-action="cancel">
     <section class="donate-modal confirm-modal" role="dialog" aria-modal="true" aria-label="${escapeHtml(m.title || '')}" onclick="event.stopPropagation()">
       <button class="modal-x" data-path-action="cancel" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-      <div class="donate-head"><span aria-hidden="true">📁</span><div><p>${escapeHtml(m.eyebrow || t('Nhập đường dẫn','Enter path'))}</p><h2>${escapeHtml(m.title || t('Đường dẫn project','Project path'))}</h2><small>${escapeHtml(m.message || '')}</small></div></div>
-      <label class="field wide"><input id="path-modal-input" value="${escapeHtml(m.value || '')}" placeholder="${escapeHtml(m.placeholder || '')}" /></label>
+      <div class="donate-head"><span aria-hidden="true">${escapeHtml(m.icon || '📁')}</span><div><p>${escapeHtml(m.eyebrow || t('Nhập đường dẫn','Enter path'))}</p><h2>${escapeHtml(m.title || t('Đường dẫn project','Project path'))}</h2><small>${escapeHtml(m.message || '')}</small></div></div>
+      <label class="field wide"><input id="path-modal-input" type="${m.inputType === 'password' ? 'password' : 'text'}" autocomplete="off" value="${escapeHtml(m.value || '')}" placeholder="${escapeHtml(m.placeholder || '')}" /></label>
       ${m.field2 ? `<label class="field wide" style="margin-top:8px;"><span style="display:block;font-size:12px;opacity:.8;margin-bottom:4px;">${escapeHtml(m.field2.label || '')}</span><input id="path-modal-input2" value="${escapeHtml(m.field2.value || '')}" placeholder="${escapeHtml(m.field2.placeholder || '')}" /></label>` : ''}
       <div class="confirm-actions"><button class="secondary" data-path-action="cancel">${t('Hủy','Cancel')}</button><button class="primary" data-path-action="ok">${t('Xác nhận','Confirm')}</button></div>
     </section>
@@ -221,7 +213,7 @@ function installModal() {
   const draft = refreshInstallDraft();
   const os = draft.os || state.os || sys?.os || 'win';
   const mode = draft.mode || state.installTab || 'native';
-  const pathExample = os === 'win' ? 'C:\\openclaw-setup' : os === 'macos' ? '/Users/you/openclaw-setup' : '/home/you/openclaw-setup';
+  const pathExample = os === 'win' ? 'C:\\aivio-bot' : os === 'macos' ? '/Users/you/aivio-bot' : '/home/you/aivio-bot';
   const osChoices = OS_OPTIONS.map(o => [o.id, t(o.title, o.title), trChoice(o).subtitle]);
   // Docker is closed for NEW projects: openclaw >=2026.9 writes config through fs-safe, which
   // fstat()s the file after an atomic rename - a check that cannot pass through a Docker Desktop
@@ -258,7 +250,7 @@ function ui(key) {
   const m = {
     setup:['C\u00e0i \u0111\u1eb7t','Setup'], bot:['Bot','Bot'], files:['T\u1ec7p','Files'], skills:['K\u1ef9 n\u0103ng','Skills'], logs:['Nh\u1eadt k\u00fd','Logs'],
     localSetup:['C\u00e0i \u0111\u1eb7t c\u1ee5c b\u1ed9','Local Setup'], ready:['S\u1eb5n s\u00e0ng','Ready'], installed:['\u0110\u00e3 c\u00e0i','Installed'],
-    light:['S\u00e1ng','Light'], dark:['T\u1ed1i','Dark'], donate:['\u1ee6ng h\u1ed9','Donate'], installer:['TR\u00ccNH C\u00c0I \u0110\u1eb6T WEB C\u1ee4C B\u1ed8','LOCAL WEB INSTALLER'],
+    light:['S\u00e1ng','Light'], dark:['T\u1ed1i','Dark'], installer:['TR\u00ccNH C\u00c0I \u0110\u1eb6T WEB C\u1ee4C B\u1ed8','LOCAL WEB INSTALLER'],
     osTitle:['Ch\u1ecdn h\u1ec7 \u0111i\u1ec1u h\u00e0nh','Choose operating system'], osDesc:['M\u1eb7c \u0111\u1ecbnh theo m\u00e1y \u0111\u00e3 nh\u1eadn di\u1ec7n','Default follows detected machine'],
     modeTitle:['Ch\u1ecdn ch\u1ebf \u0111\u1ed9 ch\u1ea1y','Choose runtime mode'], modeDesc:['Ch\u1ea1y th\u1eb3ng tr\u00ean m\u00e1y (native). Docker \u0111\u00e3 ng\u1eebng cho project m\u1edbi.','Runs directly on this machine (native). Docker is retired for new projects.'],
     install:['T\u1ea1o Bot','Create Bot'], installSub:['T\u1ea1o project \u2192 c\u00e0i runtime m\u1edbi nh\u1ea5t \u2192 kh\u1edfi \u0111\u1ed9ng bot','Generate project \u2192 install latest runtime \u2192 start bot'],
@@ -305,7 +297,7 @@ function refreshInstallDraft(next = {}) {
   const sys = state.system || {};
   const os = next.os || prev.os || state.os || sys.os || 'win';
   const mode = next.mode || prev.mode || state.mode || sys.recommendedMode || 'docker';
-  const defaultDir = os === 'win' ? 'C:\\openclaw-setup' : os === 'macos' ? '/Users/you/openclaw-setup' : '/home/you/openclaw-setup';
+  const defaultDir = os === 'win' ? 'C:\\aivio-bot' : os === 'macos' ? '/Users/you/aivio-bot' : '/home/you/aivio-bot';
   
   const projectName = String(next.projectName ?? prev.projectName ?? '').trim();
   const projectRoot = String(next.projectRoot ?? prev.projectRoot ?? '').trim();
@@ -313,7 +305,7 @@ function refreshInstallDraft(next = {}) {
   let projectDir = String(next.projectDir ?? prev.projectDir ?? '').trim();
   if (!projectDir) {
     if (projectRoot) {
-      projectDir = joinPath(projectRoot, projectName || 'openclaw-setup');
+      projectDir = joinPath(projectRoot, projectName || 'aivio-bot');
     } else {
       projectDir = defaultDir;
     }
@@ -322,8 +314,8 @@ function refreshInstallDraft(next = {}) {
   state.installDraft = { projectName, projectRoot, projectDir, os, mode };
   return state.installDraft;
 }
-function openPathModal({ title, message, value = '', placeholder = '', field2 = null, onConfirm = null }) {
-  state.pathModal = { title, message, value, placeholder, field2, onConfirm };
+function openPathModal({ title, message, value = '', placeholder = '', field2 = null, onConfirm = null, eyebrow = '', icon = '', inputType = 'text' }) {
+  state.pathModal = { title, message, value, placeholder, field2, onConfirm, eyebrow, icon, inputType };
   render();
   setTimeout(() => document.getElementById('path-modal-input')?.focus(), 0);
 }
@@ -516,6 +508,12 @@ function isVersionNewer(a, b) {
 // whether you reached it via a localhost tunnel, the server's IP, or a domain - and never
 // points at the viewer's own localhost when browsing from another machine. Port comes from
 // the backend-provided URL (which carries the right port) or the fallback.
+// The router card links to the hosted router as-is; a local 9Router is rewritten onto the host the
+// UI was opened from (same as the other local services, so SSH tunnels keep working).
+function routerHref(s = {}) {
+  return s.routerRemote && s.routerUrl ? s.routerUrl : sameHostUrl(s.routerUrl, 20128);
+}
+
 function sameHostUrl(rawUrl, fallbackPort) {
   let port = fallbackPort;
   try { const u = new URL(rawUrl); if (u.port) port = u.port; } catch {}
@@ -537,7 +535,9 @@ function remoteAccessPanel(s = {}) {
   // "Open" button uses. Hardcoding it meant any project whose gateway is not on 18789 got a tunnel
   // command missing the dashboard port, and the dashboard then simply failed to load with no clue why.
   const gwPort = Number(portOf(s.gatewayUrl, 18789));
-  const ports = Array.from(new Set([r.uiPort || 51789, gwPort, Number(portOf(s.routerUrl, 20128)), gwPort + 1]));
+  // A hosted router (router.aivio.vn) is reached over the internet, so only a local 9Router port is tunnelled.
+  const routerPorts = s.routerRemote ? [] : [Number(portOf(s.routerUrl, 20128))];
+  const ports = Array.from(new Set([r.uiPort || 51789, gwPort, ...routerPorts, gwPort + 1]));
   const cmd = `ssh ${ports.map((p) => `-L ${p}:127.0.0.1:${p}`).join(' ')} ${user}@${host}`;
   return `<details class="card" style="margin-top:12px;" ${r.headless ? 'open' : ''}>
     <summary style="cursor:pointer; font-weight:600;">🌐 ${t('Mở từ máy khác (VPS/server)', 'Open from another machine (VPS/server)')}</summary>
@@ -594,7 +594,7 @@ function render() {
   if (!mainContainer) {
     $('#app').innerHTML = `
       <aside class="sidebar"><button class="nav-collapse-btn" data-nav-toggle type="button" aria-label="Toggle sidebar" title="Thu gọn/Mở rộng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-        <div class="brand"><img src="/aivio-logo.svg" onerror="this.src='/aivio-logo.png'" alt="OpenClaw"/><div style="display: flex; flex-direction: column; align-items: center; text-align: center;"><b>Học Viện Đào Tạo AI</b><span id="sidebar-version" style="display: block; width: 100%; text-align: center; font-size: 13.5px; font-weight: 600; margin-top: 6px; color: var(--muted);">v${state.system?.versions?.setup || '...'}</span></div></div>
+        <div class="brand"><img src="/aivio-logo.svg" alt="Học Viện Đào Tạo AI"/><div style="display: flex; flex-direction: column; align-items: center; text-align: center;"><b>Học Viện Đào Tạo AI</b><span id="sidebar-version" style="display: block; width: 100%; text-align: center; font-size: 13.5px; font-weight: 600; margin-top: 6px; color: var(--muted);">v${state.system?.versions?.setup || '...'}</span></div></div>
         <nav class="sidebar-nav">${tabs.map(([id,label]) => `<button class="nav ${state.tab===id?'active':''}" data-tab="${id}">${icon(id)}<span>${label}</span></button>`).join('')}</nav>
         ${sidebarExtras()}
       </aside>
@@ -612,13 +612,7 @@ function render() {
         <section class="panel">${content()}</section>
         <footer class="app-footer" style="margin-top: 40px; padding: 24px 0 10px 0; border-top: 1px solid var(--hair); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
           <p style="margin: 0; font-size: 13px; color: var(--muted);">Copyright © 2026 <a href="https://hocvienai.com" target="_blank" rel="noopener" style="color: var(--muted); text-decoration: none; font-weight: 600;">Học Viện Đào Tạo AI</a>. Phát hành theo MIT.</p>
-          <p style="margin: 0; font-size: 13px; color: var(--body); display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;">
-            <span>Nếu công cụ này giúp ích cho bạn, hãy mời mình một ly cà phê nhé! ❤️</span>
-            <button class="top-donate" data-donate="open" style="padding: 6px 12px; font-size: 11.5px; border-radius: 999px; display: inline-flex; align-items: center; border-color: var(--ok); background: rgba(46, 230, 166, 0.08); color: var(--ok);">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; margin-right: 4px; filter: drop-shadow(0 0 6px rgba(46, 230, 166, 0.45));"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-              Mời Cafe
-            </button>
-          </p>
+          <p style="margin: 0; font-size: 12px; color: var(--muted);">Dựa trên <a href="https://github.com/tuanminhhole/openclaw-setup" target="_blank" rel="noopener" style="color: var(--muted);">OpenClaw Setup</a> (MIT) · Mã nguồn: <a href="https://github.com/theanh828726/aivio-setup" target="_blank" rel="noopener" style="color: var(--muted);">aivio-setup</a></p>
         </footer>
       </main>
       <nav class="bottom bottom-nav">${tabs.map(([id,label]) => `<button class="nav ${state.tab===id?'active':''}" data-tab="${id}"><span class="nav-ico">${icon(id)}</span><small>${label}</small></button>`).join('')}</nav>
@@ -653,9 +647,9 @@ function render() {
 
   const modalContainer = $('#modal-container');
   if (modalContainer) {
-    const modalSig = JSON.stringify({ d: state.donateOpen, bm: state.botModalOpen, be: state.botEditId, msg: state.botMessage, bc: state.botChannel, cm: state.confirmModal, pm: state.pathModal, zl: state.zaloLoginOpen, zq: state.zaloQrDataUrl, zll: state.zaloLoginLines, im: state.installModalOpen, fp: state.fbPluginModalOpen, it: state.installTab, idr: state.installDraft });
+    const modalSig = JSON.stringify({ bm: state.botModalOpen, be: state.botEditId, msg: state.botMessage, bc: state.botChannel, cm: state.confirmModal, pm: state.pathModal, zl: state.zaloLoginOpen, zq: state.zaloQrDataUrl, zll: state.zaloLoginLines, im: state.installModalOpen, fp: state.fbPluginModalOpen, it: state.installTab, idr: state.installDraft });
     if (modalContainer.dataset.sig !== modalSig) {
-      modalContainer.innerHTML = `${donateModal()}${botCreateModal()}${confirmModal()}${pathModal()}${zaloLoginModal()}${installModal()}${fbPluginModal()}`;
+      modalContainer.innerHTML = `${botCreateModal()}${confirmModal()}${pathModal()}${zaloLoginModal()}${installModal()}${fbPluginModal()}`;
       modalContainer.dataset.sig = modalSig;
     }
   }
@@ -852,7 +846,7 @@ function dashboardView() {
   const installedSkillsCount = allSkills.filter(sk => !!featureFlags[`skill:${sk.slug || sk.id}`]).length;
   const installedPluginsCount = allPlugins.filter(pl => !!featureInstalled[`plugin:${pl.package || pl.id}`]).length;
 
-  const openclawVer = String((s.runtimeVersions?.openclaw || sys.versions?.currentOpenclaw || sys.versions?.openclaw || '-')).replace(/^openclaw@/, '').replace(/^create-openclaw-bot@/, '');
+  const openclawVer = String((s.runtimeVersions?.openclaw || sys.versions?.currentOpenclaw || sys.versions?.openclaw || '-')).replace(/^openclaw@/, '').replace(/^create-(?:openclaw|aivio)-bot@/, '');
   const routerVer = String((s.runtimeVersions?.nineRouter || sys.versions?.currentNineRouter || sys.versions?.nineRouter || '-')).replace(/^9router@/, '');
   const nodeVer = String((s.runtimeVersions?.node || sys.versions?.currentNode || sys.versions?.node || sys.node?.output || '-')).replace(/^v/, '');
   const machineLabel = `${sys.os || '-'} \u00b7 ${sys.arch || '-'}`;
@@ -943,9 +937,9 @@ function dashboardView() {
         <div class="card-head"><h3>${ui('status')}</h3></div>
         <div class="runtime-status-grid" style="grid-template-columns: 1fr;">
           <div class="runtime-status-card"><div class="runtime-status-head"><span>OpenClaw</span>${statusBadge(s.gatewayStatus)}</div><div class="runtime-card-actions"><a class="runtime-open-btn secondary icon-btn2" href="${sameHostUrl(s.gatewayUrl, 18789)}" target="_blank" rel="noopener" style="justify-content:center; flex:1; font-size:12px; height:36px; border-width:1px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>${t('M\u1edf web','Open')}</a><button class="runtime-open-btn icon-btn2" data-update-app type="button" style="justify-content:center; flex:1; font-size:12px; height:36px; border:none; background:rgba(255,36,54,.15); color:#ff4b5d;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>${t('Update','Update')}</button></div></div>
-          <div class="runtime-status-card"><div class="runtime-status-head"><span>9Router</span>${statusBadge(s.routerStatus)}</div><div class="runtime-card-actions"><a class="runtime-open-btn secondary icon-btn2" href="${sameHostUrl(s.routerUrl, 20128)}" target="_blank" rel="noopener" style="justify-content:center; flex:1; font-size:12px; height:36px; border-width:1px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>${t('M\u1edf web','Open')}</a><button class="runtime-open-btn icon-btn2" data-update-router type="button" style="justify-content:center; flex:1; font-size:12px; height:36px; border:none; background:rgba(255,36,54,.15); color:#ff4b5d;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>${t('Update','Update')}</button></div></div>
+          <div class="runtime-status-card"><div class="runtime-status-head"><span>${s.routerRemote ? 'HVDTAI Router' : '9Router'}</span>${statusBadge(s.routerStatus)}</div><div class="runtime-card-actions"><a class="runtime-open-btn secondary icon-btn2" href="${routerHref(s)}" target="_blank" rel="noopener" style="justify-content:center; flex:1; font-size:12px; height:36px; border-width:1px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>${t('M\u1edf web','Open')}</a><button class="runtime-open-btn icon-btn2" data-router-key type="button" title="${escapeHtml(t('API key dùng để gọi router','API key used to call the router'))}" style="justify-content:center; flex:1; font-size:12px; height:36px; border:none; background:${(s.credentials || {}).nineRouterApiKey ? 'rgba(46,230,166,.12)' : 'rgba(251,191,36,.16)'}; color:${(s.credentials || {}).nineRouterApiKey ? 'var(--ok)' : '#fbbf24'};">${actionIcon('link')}<span>${(s.credentials || {}).nineRouterApiKey ? t('Đổi key','Change key') : t('Nhập key','Set key')}</span></button>${s.routerRemote ? '' : `<button class="runtime-open-btn icon-btn2" data-update-router type="button" style="justify-content:center; flex:1; font-size:12px; height:36px; border:none; background:rgba(255,36,54,.15); color:#ff4b5d;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>${t('Update','Update')}</button>`}</div></div>
         </div>
-        <div class="dash-version-list"><div><span>OpenClaw</span><b>${escapeHtml(openclawVer || '-')}</b></div><div><span>9Router</span><b>${escapeHtml(routerVer || '-')}</b></div><div><span>Node.js</span><b>${escapeHtml(nodeVer || '-')}</b></div><div><span>${t('Machine','Machine')}</span><b>${escapeHtml(machineLabel)}</b></div></div>
+        <div class="dash-version-list"><div><span>OpenClaw</span><b>${escapeHtml(openclawVer || '-')}</b></div>${s.routerRemote ? '' : `<div><span>9Router</span><b>${escapeHtml(routerVer || '-')}</b></div>`}<div><span>Node.js</span><b>${escapeHtml(nodeVer || '-')}</b></div><div><span>${t('Machine','Machine')}</span><b>${escapeHtml(machineLabel)}</b></div></div>
       </div>
       ${remoteAccessPanel(s)}
     </section>
@@ -1006,7 +1000,7 @@ function botView() {
   if (channelBots.length && !channelBots.some(b => b.id === state.activeBotId)) state.activeBotId = (channelBots.find(b => b.id !== 'bot') || channelBots[0]).id;
   if (!channelBots.length && state.activeBotId) { state.activeBotId = ''; state.selectedFile = ''; state.files = []; }
 
-  const openclawVer = String((s.runtimeVersions?.openclaw || sys.versions?.currentOpenclaw || sys.versions?.openclaw || '-')).replace(/^openclaw@/, '').replace(/^create-openclaw-bot@/, '');
+  const openclawVer = String((s.runtimeVersions?.openclaw || sys.versions?.currentOpenclaw || sys.versions?.openclaw || '-')).replace(/^openclaw@/, '').replace(/^create-(?:openclaw|aivio)-bot@/, '');
   const routerVer = String((s.runtimeVersions?.nineRouter || sys.versions?.currentNineRouter || sys.versions?.nineRouter || '-')).replace(/^9router@/, '');
   const nodeVer = String((s.runtimeVersions?.node || sys.versions?.currentNode || sys.versions?.node || sys.node?.output || '-')).replace(/^v/, '');
   const machineLabel = `${sys.os || '-'} \u00b7 ${sys.arch || '-'}`;
@@ -1051,7 +1045,7 @@ function botView() {
         <div class="card-head"><h3>${t('Trạng thái','Status')}</h3></div>
         <div class="runtime-status-grid" style="grid-template-columns: 1fr; margin-top: 14px;">
           <div class="runtime-status-card"><div class="runtime-status-head"><span>OpenClaw</span>${statusBadge(s.gatewayStatus)}</div><div class="runtime-card-actions"><a class="runtime-open-btn secondary icon-btn2" href="${sameHostUrl(s.gatewayUrl, 18789)}" target="_blank" rel="noopener" style="justify-content:center; flex:1; font-size:12px; height:36px; border-width:1px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>${t('Mở web','Open')}</a><button class="runtime-open-btn icon-btn2" data-update-app type="button" style="justify-content:center; flex:1; font-size:12px; height:36px; border:none; background:rgba(255,36,54,.15); color:#ff4b5d;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>${t('Update','Update')}</button></div></div>
-          <div class="runtime-status-card"><div class="runtime-status-head"><span>9Router</span>${statusBadge(s.routerStatus)}</div><div class="runtime-card-actions"><a class="runtime-open-btn secondary icon-btn2" href="${sameHostUrl(s.routerUrl, 20128)}" target="_blank" rel="noopener" style="justify-content:center; flex:1; font-size:12px; height:36px; border-width:1px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>${t('Mở web','Open')}</a><button class="runtime-open-btn icon-btn2" data-update-router type="button" style="justify-content:center; flex:1; font-size:12px; height:36px; border:none; background:rgba(255,36,54,.15); color:#ff4b5d;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>${t('Update','Update')}</button></div></div>
+          <div class="runtime-status-card"><div class="runtime-status-head"><span>${s.routerRemote ? 'HVDTAI Router' : '9Router'}</span>${statusBadge(s.routerStatus)}</div><div class="runtime-card-actions"><a class="runtime-open-btn secondary icon-btn2" href="${routerHref(s)}" target="_blank" rel="noopener" style="justify-content:center; flex:1; font-size:12px; height:36px; border-width:1px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>${t('Mở web','Open')}</a>${s.routerRemote ? '' : `<button class="runtime-open-btn icon-btn2" data-update-router type="button" style="justify-content:center; flex:1; font-size:12px; height:36px; border:none; background:rgba(255,36,54,.15); color:#ff4b5d;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>${t('Update','Update')}</button>`}</div></div>
         </div>
         
         ${''/* native: no container → no image to rebuild, and the host FS is already visible */}
@@ -1064,7 +1058,7 @@ function botView() {
 
         <div class="dash-version-list" style="margin-top: 18px;">
           <div><span>OpenClaw</span><b>${escapeHtml(openclawVer || '-')}</b></div>
-          <div><span>9Router</span><b>${escapeHtml(routerVer || '-')}</b></div>
+          ${s.routerRemote ? '' : `<div><span>9Router</span><b>${escapeHtml(routerVer || '-')}</b></div>`}
           ${ch === 'zalo-personal' ? `<div><span>Zalo Connect</span><b>${escapeHtml(state.zaloHealth?.installedVersion || '-')}</b></div>
           <div><span>Zalo Mod</span><b>${state.zaloHealth ? escapeHtml(state.zaloHealth.zaloModVersion || (state.zaloHealth.zaloModInstalled ? '-' : t('Chưa cài','Not installed'))) : '…'}</b></div>` : ''}
         </div>
@@ -1160,7 +1154,7 @@ function botStatusPanel(s) {
   return `<aside class="card bot-side"><h3>${ui('status')}</h3>
     <div class="runtime-status-grid">
       <div class="runtime-status-card"><div class="runtime-status-head"><span>OpenClaw</span>${statusBadge(s.gatewayStatus)}</div><a class="runtime-open-btn" href="${sameHostUrl(s.gatewayUrl, 18789)}" target="_blank" rel="noopener">${t('Mở website','Open website')}</a></div>
-      <div class="runtime-status-card"><div class="runtime-status-head"><span>9Router</span>${statusBadge(s.routerStatus)}</div><a class="runtime-open-btn" href="${sameHostUrl(s.routerUrl, 20128)}" target="_blank" rel="noopener">${t('Mở website','Open website')}</a></div>
+      <div class="runtime-status-card"><div class="runtime-status-head"><span>${s.routerRemote ? 'HVDTAI Router' : '9Router'}</span>${statusBadge(s.routerStatus)}</div><a class="runtime-open-btn" href="${routerHref(s)}" target="_blank" rel="noopener">${t('Mở website','Open website')}</a></div>
     </div>
     <form class="credential-panel" id="credential-form">
       ${credentialField({ id: 'openclawToken', label: 'OpenClaw token', value: c.openclawToken || '', editable: false })}
@@ -1339,7 +1333,6 @@ function wireTab() {
     }
     showToast(t('Đã copy','Copied'), text, 'success');
   });
-  document.querySelectorAll('[data-donate]').forEach(el => el.onclick = () => { state.donateOpen = el.dataset.donate === 'open'; render(); });
   document.querySelectorAll('[data-fbplugin]').forEach(el => el.onclick = () => { state.fbPluginModalOpen = false; render(); });
   document.querySelectorAll('[data-bot-modal]').forEach(el => el.onclick = () => { state.botModalOpen = el.dataset.botModal === 'open'; if (el.dataset.botModal === 'open') state.botEditId = ''; state.botMessage = ''; render(); });
   document.querySelectorAll('[data-edit-bot]').forEach(btn => btn.onclick = (ev) => { ev.stopPropagation(); state.botEditId = btn.dataset.editBot; state.botChannel = (state.install?.bots || []).find((b) => b.id === state.botEditId)?.channel || state.botChannel; state.botModalOpen = true; state.botMessage = ''; render(); });
@@ -1726,6 +1719,28 @@ document.querySelectorAll('[data-project-pick-folder]').forEach(btn => btn.oncli
       await loadStatus(true);
       state.tab = 'logs';
       render();
+    });
+  });
+  document.querySelectorAll('[data-router-key]').forEach(btn => btn.onclick = () => {
+    const remote = !!state.install?.routerRemote;
+    openPathModal({
+      title: remote ? 'HVDTAI Router API key' : '9Router API key',
+      message: remote
+        ? t('Tạo key tại router.aivio.vn → Endpoints rồi dán vào đây. Bot dùng key này để gọi combo smart-route; lưu xong bot dùng key mới ngay ở lượt sau.', 'Create a key at router.aivio.vn → Endpoints and paste it here. Bots use it to call the smart-route combo; after saving, the next turn uses the new key.')
+        : t('Dán key lấy ở mục Endpoints của 9Router cục bộ.', 'Paste the key from the local 9Router Endpoints page.'),
+      placeholder: 'sk-...',
+      eyebrow: t('Kết nối router', 'Router connection'),
+      icon: '🔑',
+      inputType: 'password',
+      onConfirm: async (value) => {
+        try {
+          await api('/api/bot/credentials', { method: 'PUT', body: { projectDir: activeProjectDir(), nineRouterApiKey: value } });
+          appendLogLine(t('✅ Đã lưu API key cho router.', '✅ Router API key saved.'));
+        } catch (err) {
+          appendLogLine(`❌ ${t('Không lưu được API key', 'Could not save the API key')}: ${err.message || err}`);
+        }
+        await loadStatus();
+      },
     });
   });
   document.querySelectorAll('[data-path-action]').forEach(btn => btn.onclick = () => {

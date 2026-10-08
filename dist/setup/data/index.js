@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 /**
  * setup/data/index.js - Shared data for CLI + Wizard
  *

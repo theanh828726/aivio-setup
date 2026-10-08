@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 (function (root) {
   const common = (typeof globalThis !== 'undefined' && globalThis.__openclawCommon) || {};
   const SUPPORTED_CODEX_MODELS = common.SUPPORTED_CODEX_MODELS || ['cx/gpt-5.4', 'cx/gpt-5.3-codex', 'cx/gpt-5.2', 'cx/gpt-5.4-mini'];

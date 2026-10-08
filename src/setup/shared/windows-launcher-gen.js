@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 /**
  * Double-click launchers for a NATIVE bot on Windows.
@@ -36,6 +36,10 @@
  */
 
 const CRLF = (s) => s.replace(/\r?\n/g, '\r\n');
+
+// Where the Setup UI launcher fetches the installer from. Keep in sync with SETUP_UPDATE_SPEC
+// in src/server/local-server.js. Switch to `create-aivio-bot` once the package is on npm.
+const SETUP_NPX_SPEC = 'github:theanh828726/aivio-setup';
 
 /** Hidden-launch helper. WScript is the only reliable way to start a .cmd with no window. */
 function buildRunHiddenVbs() {
@@ -119,7 +123,7 @@ function buildSetupUiCmd({ projectDir, setupPort }) {
     // packages ... Ok to proceed? (y)". The launcher runs hidden, so nobody can answer it: the
     // window sits there forever and the dashboard simply never opens. Measured on a customer
     // machine, where it looked like the tunnel was broken rather than a prompt waiting offscreen.
-    `call npx --yes create-openclaw-bot --host=127.0.0.1 --port=${setupPort} --no-open --project-dir=${projectDir}` +
+    `call npx --yes ${SETUP_NPX_SPEC} --host=127.0.0.1 --port=${setupPort} --no-open --project-dir=${projectDir}` +
     ` > "${projectDir}\\setup-ui-%T%.log" 2>&1\n`,
   );
 }
